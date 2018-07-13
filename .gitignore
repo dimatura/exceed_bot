@@ -1,0 +1,6 @@
+*.pyc
+.*~
+.*.swo
+.*.swp
+core
+training/.ipynb_checkpoints/

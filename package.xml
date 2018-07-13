@@ -1,0 +1,23 @@
+<package format="2">
+  <name>exceed_bot</name>
+  <version>0.0.0</version>
+  <description>This is the project short description.</description>
+
+  <maintainer email="dimatura@cmu.edu">Daniel Maturana</maintainer>
+  <author email="dimatura@cmu.edu">Daniel Maturana</author>
+  <license>Copyright Carnegie Mellon University 2018</license>
+  <!-- <url type="website">http://wiki.ros.org/pyvox</url> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cmake_modules</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>joy_teleop</depend>
+  <depend>joy</depend>
+
+  <!--<depend>roscpp</depend>-->
+
+  <!--<run_depend>libpcl-all</run_depend>-->
+  <!--<run_depend>libopencv-dev</run_depend>-->
+</package>
