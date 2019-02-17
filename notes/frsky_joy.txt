@@ -1,0 +1,10 @@
+using adapter, 
+- left throttle ch0 -1.0, min is 1.0
+- left yaw is ch3 -1,1
+- right up is ch2 -1,1. 
+- right roll is ch1 -1,1
+- left roller is ch4
+- right roller ch5
+- left toggle is ch6, -1,1
+- right toggle is ch7, -1,1
+
