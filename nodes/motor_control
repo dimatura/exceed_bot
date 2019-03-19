@@ -19,6 +19,8 @@ MOTOR = 0
 SERVO = 5
 
 # won't move until ~1580
+# note -- typical minmax values in RC are 988-2012, with 1500 being center
+# subs range seems to be 172-1811
 # TODO figure out weird reversal/break thing
 MOTOR_CENTER = 1450
 MOTOR_MIN = MOTOR_CENTER - 200
@@ -64,6 +66,7 @@ class Node(object):
         # -1, 1 to 0, 1
         val2 = (val + 1.0)/2.
         val3 = MOTOR_MIN*(1.-val2) + val2*MOTOR_MAX
+        print val3
         val4 = min(max(val3, MOTOR_MIN), MOTOR_MAX)
         return int(val4)
 

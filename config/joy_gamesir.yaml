@@ -10,7 +10,7 @@ teleop:
                 scale: 1.0
                 offset: 0.0
             - 
-                axis: 3 # right thum left-right 
+                axis: 2 # right thum left-right 
                 target: angular.z
                 scale: 1.0
                 offset: 0.0
