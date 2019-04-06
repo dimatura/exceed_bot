@@ -50,9 +50,10 @@ atexit.register(close_serial)
 
 #ser = serial.Serial('/dev/ttyACM0', 115200)
 #ser = serial.Serial('/dev/ttyACM1', 115200)
-ser = serial.Serial('/dev/ttyACM2', 115200)
+ser = serial.Serial('/dev/teensy', 115200)
 print(ser.is_open)
-maestro = exceed_bot.maestro.Controller('/dev/ttyACM0')
+#maestro = exceed_bot.maestro.Controller('/dev/ttyACM0')
+maestro = exceed_bot.maestro.Controller('/dev/maestro')
 
 target_ticks = 8
 
@@ -66,21 +67,13 @@ Kp = 1.0
 
 while True:
     ticks = read_msg()[0]
-    #throttle_pulse = motor_map(0.45)
-    #if ticks < target_ticks:
-    #    throttle_pulse += 1
-    #elif ticks > target_ticks:
-    #    throttle_pulse -= 1
-    #else:
-    #    pass
-
-    #throttle_pulse = min(max(throttle_pulse, MOTOR_MIN), MOTOR_MAX)
 
     err = (target_ticks - ticks)
     print('err: %d' % err)
     correction = Kp*err 
 
     throttle_pulse1 = throttle_pulse0 + correction
+    throttle_pulse1 = min(max(throttle_pulse1, MOTOR_MIN), MOTOR_MAX)
 
     print(ticks, throttle_pulse1/4.0)
     # note not multiplying by 4
