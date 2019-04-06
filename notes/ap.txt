@@ -1,0 +1,3 @@
+
+change rc.local and /etc/NetworkManager/NetworkManager.conf
+not sure about /etc/network/interfaces
