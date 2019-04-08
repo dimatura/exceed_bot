@@ -38,7 +38,7 @@ class Node(object):
     def __init__(self):
         rospy.init_node('motor_control_node')
         self.sub_vel = rospy.Subscriber('/cmd_vel', Twist, self.cmd_vel_cb)
-        self.maestro = exceed_bot.maestro.Controller()
+        self.maestro = exceed_bot.maestro.Controller('/dev/maestro')
         rospy.on_shutdown(self.shutdown)
 
     def cmd_vel_cb(self, msg):
