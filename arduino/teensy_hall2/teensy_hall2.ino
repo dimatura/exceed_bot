@@ -8,8 +8,8 @@
 
 #define LED_INTERVAL_MS 250
 // if we use 50 and 20 then window will be 1s
-#define SPEED_INTERVAL_MS 50
-#define SPEED_BUFFER_SIZE 20
+#define SPEED_INTERVAL_MS 25
+#define SPEED_BUFFER_SIZE 10
 
 // note: exceedrc makes 90 ticks per 30 cm. (roughly, but number nice and round).
 #define TICKS_PER_M 300
