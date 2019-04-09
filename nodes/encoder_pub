@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+"""
+tuned for exceed platform
+"""
+
+import time
+import sys
+import os
+import struct
+
+import rospy
+
+from geometry_msgs.msg import Twist
+from std_msgs.msg import Empty
+from std_msgs.msg import Float64
+
+import serial
+from cobs import cobs
+
+
+
+
+class Node(object):
+    def __init__(self):
+        rospy.init_node('encoder_pub')
+        rospy.on_shutdown(self.shutdown)
+        self.encoder = serial.Serial('/dev/teensy', 115200)
+        self.encoder_pub = rospy.Publisher('/encoder', Float64, queue_size=10)
+
+    def read_msg(self):
+        buf = []
+        while True:
+            b = self.encoder.read()
+            if b == '\0':
+                break
+            buf.append(b)
+        msg_data = cobs.decode(''.join(buf))
+        if len(msg_data) != 4:
+            print('bad length: %d' % len(msg_data))
+            return 0
+        msg = struct.unpack('<I', msg_data)
+        return msg
+
+    def shutdown(self):
+        rospy.loginfo('shutdown')
+        self.encoder.close()
+
+    def run(self):
+        while not rospy.is_shutdown():
+            ticks = float(self.read_msg()[0])
+            self.encoder_pub.publish(Float64(ticks))
+            rospy.sleep(0.001)
+
+
+if __name__ == '__main__':
+    node = Node()
+    node.run()

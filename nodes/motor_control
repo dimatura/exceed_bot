@@ -12,6 +12,7 @@ import rospy
 
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
+from std_msgs.msg import Float64
 
 import exceed_bot.maestro
 
@@ -23,8 +24,10 @@ SERVO = 5
 # subs range seems to be 172-1811
 # TODO figure out weird reversal/break thing
 MOTOR_CENTER = 1450
+#MOTOR_MIN = MOTOR_CENTER - 200
+#MOTOR_MAX = MOTOR_CENTER + 200
 MOTOR_MIN = MOTOR_CENTER - 200
-MOTOR_MAX = MOTOR_CENTER + 200
+MOTOR_MAX = MOTOR_CENTER + 180
 
 # center between 1330-1500
 SERVO_CENTER = 1409
@@ -38,7 +41,9 @@ class Node(object):
     def __init__(self):
         rospy.init_node('motor_control_node')
         self.sub_vel = rospy.Subscriber('/cmd_vel', Twist, self.cmd_vel_cb)
-        self.maestro = exceed_bot.maestro.Controller()
+        self.pub_servo = rospy.Publisher('/servo_pulse', Float64, queue_size=10)
+        self.pub_motor = rospy.Publisher('/motor_pulse', Float64, queue_size=10)
+        self.maestro = exceed_bot.maestro.Controller('/dev/maestro')
         rospy.on_shutdown(self.shutdown)
 
     def cmd_vel_cb(self, msg):
@@ -49,6 +54,9 @@ class Node(object):
 
         steer_pulse = self.servo_map(steer)
         throttle_pulse = self.motor_map(throttle)
+
+        self.pub_servo.publish(Float64(float(steer_pulse)))
+        self.pub_motor.publish(Float64(float(throttle_pulse)))
 
         rospy.loginfo('throttle %f %f', throttle, throttle_pulse)
         rospy.loginfo('steer %f %f', steer, steer_pulse)
@@ -66,7 +74,6 @@ class Node(object):
         # -1, 1 to 0, 1
         val2 = (val + 1.0)/2.
         val3 = MOTOR_MIN*(1.-val2) + val2*MOTOR_MAX
-        print val3
         val4 = min(max(val3, MOTOR_MIN), MOTOR_MAX)
         return int(val4)
 
