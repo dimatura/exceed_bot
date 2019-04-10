@@ -25,7 +25,8 @@ def exit_handler():
     logging.info('closing port')
     ser.close()
 
-ser = serial.Serial('/dev/ttyACM0', 115200)
+#ser = serial.Serial('/dev/ttyACM0', 115200)
+ser = serial.Serial('/dev/zumo', 115200)
 ser.reset_input_buffer()
 ser.reset_output_buffer()
 atexit.register(exit_handler)
@@ -35,9 +36,9 @@ logging.info(ser.writable())
 
 tic = time.time()
 while True:
-    #msg0 = struct.pack('ff', 0., 0.)
+    msg0 = struct.pack('ff', 0., 0.)
     #msg0 = struct.pack('ff', 200, 200.)
-    msg0 = struct.pack('ff', 400, 400.)
+    #msg0 = struct.pack('ff', 400, 400.)
     msg1 = cobs.encode(msg0) + '\x00'
     wrote = ser.write(msg1)
 
