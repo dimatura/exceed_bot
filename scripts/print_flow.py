@@ -24,9 +24,10 @@ def read_msg():
     return msg
 
 
-ser = serial.Serial('/dev/ttyACM0', 115200)
+#ser = serial.Serial('/dev/ttyACM0', 115200)
 #ser = serial.Serial('/dev/ttyACM1', 115200)
 #ser = serial.Serial('/dev/ttyACM2', 115200)
+ser = serial.Serial('/dev/teensy', 115200)
 atexit.register(close_serial)
 print(ser.is_open)
 

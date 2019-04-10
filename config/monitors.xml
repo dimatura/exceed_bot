@@ -1,0 +1,19 @@
+<!-- this is for skyzone - force rez -->
+<monitors>
+    <configuration>
+        <output name="HDMI-0">
+            <vendor>ACR</vendor>
+            <product>0x0440</product>
+            <serial>0x52201c2a</serial>
+            <width>720</width>
+            <height>480</height>
+            <rate>60</rate>
+            <x>0</x>
+            <y>0</y>
+            <rotation>normal</rotation>
+            <reflect_x>no</reflect_x>
+            <reflect_y>no</reflect_y>
+            <primary>yes</primary>
+        </output>
+    </configuration>
+</monitors>

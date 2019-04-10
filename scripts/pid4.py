@@ -11,8 +11,8 @@ import exceed_bot.maestro
 
 MOTOR = 0
 MOTOR_CENTER = 1450*4
-MOTOR_MIN = MOTOR_CENTER - 100*4
-MOTOR_MAX = MOTOR_CENTER + 180*4
+MOTOR_MIN = MOTOR_CENTER - 180*4
+MOTOR_MAX = MOTOR_CENTER + 200*4
 print(MOTOR_MIN/4.0, MOTOR_MAX/4.0)
 
 
@@ -55,14 +55,14 @@ print(ser.is_open)
 #maestro = exceed_bot.maestro.Controller('/dev/ttyACM0')
 maestro = exceed_bot.maestro.Controller('/dev/maestro')
 
-target_ticks = 1
+target_ticks = 3.0
 
 throttle0 = 0.0
 throttle1 = 0.0
 err0 = 0.0
 
-#Kp = 0.005
-Kp = 0.01
+Kp = 0.005
+#Kp = 0.01
 
 while True:
     ticks = read_msg()[0]

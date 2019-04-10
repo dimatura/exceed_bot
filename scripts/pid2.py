@@ -55,7 +55,7 @@ print(ser.is_open)
 #maestro = exceed_bot.maestro.Controller('/dev/ttyACM0')
 maestro = exceed_bot.maestro.Controller('/dev/maestro')
 
-target_ticks = 8
+target_ticks = 2
 
 # pid = PID(Kp=0.01, Ki=0.0, Kd=0.0, setpoint=8.0, sample_time=0.01, output_limits=(MOTOR_MIN, MOTOR_MAX))
 #pid.auto_mode = True
