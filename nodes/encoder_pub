@@ -26,6 +26,7 @@ class Node(object):
         rospy.init_node('encoder_pub')
         rospy.on_shutdown(self.shutdown)
         self.encoder = serial.Serial('/dev/teensy', 115200)
+        # self.encoder = serial.Serial('/dev/ttyACM0', 115200)
         self.encoder_pub = rospy.Publisher('/encoder', Float64, queue_size=10)
 
     def read_msg(self):
