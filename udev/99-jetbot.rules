@@ -1,0 +1,3 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0483", ATTRS{serial}=="2969920", SYMLINK+="teensy"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="0089", ATTRS{serial}=="00220266", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="maestro"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="2300", ATTRS{serial}=="3", SYMLINK+="zumo"
