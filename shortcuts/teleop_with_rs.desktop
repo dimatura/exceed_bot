@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+TerminalOptions=bash
+Exec=bash -c "source /opt/ros/kinetic/setup.bash; source ~/ws/exceed_bot/devel/setup.bash; roslaunch exceed_bot teleop_with_rs"
+#Icon=/home/ubuntu/icon.png
+Name='teleop_with_rs'
