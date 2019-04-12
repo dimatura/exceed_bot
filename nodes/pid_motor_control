@@ -48,16 +48,14 @@ SERVO_MAX = 1780
 # teensy sends data every 50 ms
 ENCODER_READ_PERIOD_S = 0.045
 
-# not sure about time but seems to work ok
-PID_SAMPLE_TIME_S = 0.01
-PID_KP = 0.02
-PID_KI = 0.02
-PID_KD = 0.0
-
-
 class Node(object):
     def __init__(self):
         rospy.init_node('pid_motor_control_node')
+
+        PID_SAMPLE_TIME_S = rospy.get_param('~pid_sample_time')
+        PID_KP = rospy.get_param('~pid_kp')
+        PID_KI = rospy.get_param('~pid_ki')
+        PID_KD = rospy.get_param('~pid_kd')
 
         self.ticks_per_s = 0.
         self.target_ticks_per_s = 0.

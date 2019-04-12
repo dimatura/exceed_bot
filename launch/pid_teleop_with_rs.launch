@@ -13,7 +13,12 @@
 
     <node pkg="joy_teleop" type="joy_teleop.py" name="joy_teleop"/>
 
-    <node pkg="exceed_bot" type="pid_motor_control" name="pid_motor_control" output="screen" required="true"/>
+    <node pkg="exceed_bot" type="pid_motor_control" name="pid_motor_control" output="screen" required="true">
+        <param name="pid_sample_time" value="0.01"/>
+        <param name="pid_kp" value="0.02"/>
+        <param name="pid_ki" value="0.02"/>
+        <param name="pid_kd" value="0.0"/>
+    </node>
 
     <include file="$(find exceed_bot)/launch/rs_aligned_depth.launch">
     </include>
