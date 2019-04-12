@@ -1,8 +1,7 @@
 <launch>
     <node pkg="exceed_bot" type="clone0" name="clone_node" output="screen" required="true">
-        <param name="model_fname" value="$(find exceed_bot)/models/wp1_d4.ts"/>
-        <param name="img_ds_factor" value="4"/>
-        <param name="nbins" value="16"/>
-        <param name="throttle" value="12"/>
+        <param name="~/model_fname" value="$(find exceed_bot)/models/wp1_d4.ts"/>
+        <param name="~/img_ds_factor" value="4"/>
+        <param name="~/nbins" value="16"/>
     </node>
 </launch>
