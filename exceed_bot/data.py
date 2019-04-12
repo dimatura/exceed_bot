@@ -21,6 +21,8 @@ import cv2
 
 import exceed_bot.train_utils as ebutils
 
+import Augmentor as aug
+
 
 def preprocess(img):
     img = np.asarray(img)
@@ -136,9 +138,10 @@ class CloneDataset(object):
 
 
 class WpDataset(object):
-    def __init__(self, fnames, nbins, img_ds_factor):
+    def __init__(self, fnames, nbins, img_ds_factor, augment=True):
         self.nbins = nbins
         self.img_ds_factor = img_ds_factor
+        self.augment = augment
         all_fnames = fnames
         self.fnames = []
         for xfname, yfname in all_fnames:
@@ -150,6 +153,16 @@ class WpDataset(object):
         if self.nbins is not None:
             self.bins = np.linspace(-1., 1., self.nbins+1)[1:]
 
+        p = aug.Pipeline()
+        #p.flip_left_right(0.5)
+        p.random_brightness(0.5, 0.6, 1.6)
+        p.random_erasing(0.1, 0.2)
+        #p.histogram_equalisation(0.9)
+        p.random_color(0.5, 0.6, 1.6)
+        p.random_contrast(0.5, 0.6, 1.6)
+        self.augtf = p.torch_transform()
+
+
     def __len__(self):
         return len(self.fnames)
 
@@ -159,6 +172,8 @@ class WpDataset(object):
         w, h = img.size
         # resize to 320, 240 or 160, 120
         img = img.resize((w//self.img_ds_factor, h//self.img_ds_factor))
+        if self.augment:
+            img = self.augtf(img)
         return img
 
     @funcy.memoize

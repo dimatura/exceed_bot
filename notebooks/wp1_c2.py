@@ -39,8 +39,8 @@ import exceed_bot.train_utils as ebutils
 
 # %%
 nbins = None
-img_ds_factor = 4
-name = 'wp0'
+img_ds_factor = 2
+name = 'wp1_c2'
 model_dir = Path('/home/dmaturan/ws/exceed_bot/src/exceed_bot/models')
 dset_dir = Path('/home/dmaturan/data/exceed_bot')
 
