@@ -60,6 +60,7 @@ for b in train_loader:
     break
 print(bx.shape)
 print(by.shape)
+print(by)
 
 # %%
 net = resnet18(pretrained=True)
