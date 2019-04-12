@@ -70,9 +70,13 @@ class Node(object):
                 #yhat = yhat.argmax().cpu().data.numpy()
                 yhat = yhat.argmax().item()
                 steer = ebdata.undiscretize(yhat, self.bins)
+                # BIG HACK
+                steer = -steer
             else:
                 yhat = yhat.item()
-                steer = yhat
+                # BIG HACK
+                #steer = yhat
+                steer = -yhat
 
         rospy.loginfo(steer)
         #toc = time.time()
@@ -96,8 +100,12 @@ class Node(object):
         recty0 = H-40
         recty1 = H-20
 
+        rectxmid = (rectx0 + rectx1)//2
+
         drawimg = cv2.rectangle(drawimg, (rectx0, recty0), (rectx1, recty1), (0, 255, 0), 3)
-        steer01 = (steer + 1)/2.
+        drawimg = cv2.line(drawimg, (rectxmid, recty0), (rectxmid, recty1), (0, 255, 0), 3)
+
+        steer01 = (steer + 1.)/2.
         lx = int(rectx0*steer01 + rectx1*(1-steer01))
         drawimg = cv2.line(drawimg, (lx, recty0), (lx, recty1), (0, 0, 255), 3)
 
