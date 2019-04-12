@@ -30,11 +30,15 @@ class Node(object):
         self.nbins = rospy.get_param("~nbins")
         self.throttle = rospy.get_param("~throttle")
 
+        if self.nbins > 0:
+            self.bins = np.linspace(-1., 1., self.nbins+1)[1:]
+
         self.model = None
 
         self.img_cb = rospy.Subscriber('/camera/color/image_raw', Image, self.img_cb)
-        #self.bridge = cv_bridge.CvBridge()
+        self.bridge = cv_bridge.CvBridge()
         self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=2)
+        self.viz_pub = rospy.Publisher('/viz', Image, queue_size=2)
 
     def init_model(self):
         if self.model is None:
@@ -63,23 +67,44 @@ class Node(object):
             imgt = torch.from_numpy(imgpp).cuda()
             yhat = self.model(imgt)
             if self.nbins > 0:
-                yhat = yhat.argmax().cpu().data.numpy()
+                #yhat = yhat.argmax().cpu().data.numpy()
+                yhat = yhat.argmax().item()
+                steer = ebdata.undiscretize(yhat, self.bins)
             else:
                 yhat = yhat.item()
+                steer = yhat
 
-        rospy.loginfo(yhat)
+        rospy.loginfo(steer)
         #toc = time.time()
         #rospy.loginfo('elapsed: %f', (toc - tic)/1000.)
         twist_msg = Twist()
         twist_msg.linear.x = self.throttle
-        twist_msg.angular.z = yhat
+        twist_msg.angular.z = steer
         self.cmd_pub.publish(twist_msg)
 
-        #img_msg = self.bridge.cv2_to_imgmsg(img_np, encoding='bgr8')
-        #img_msg.header.stamp = msg.header.stamp
-        #img_msg.header.frame_id = msg.header.frame_id
-        #self.img_pub.publish(img_msg)
+        self.viz(msg, img, steer)
 
+    def viz(self, msg, img, steer):
+        #img_msg = self.bridge.cv2_to_imgmsg(img_np, encoding='bgr8')
+
+        drawimg = img.copy()
+
+        W = img.shape[1]
+        H = img.shape[0]
+        rectx0 = 20
+        rectx1 = W-20
+        recty0 = H-40
+        recty1 = H-20
+
+        drawimg = cv2.rectangle(drawimg, (rectx0, recty0), (rectx1, recty1), (0, 255, 0), 3)
+        steer01 = (steer + 1)/2.
+        lx = int(rectx0*steer01 + rectx1*(1-steer01))
+        drawimg = cv2.line(drawimg, (lx, recty0), (lx, recty1), (0, 0, 255), 3)
+
+        img_msg = self.bridge.cv2_to_imgmsg(drawimg, encoding='rgb8')
+        img_msg.header.stamp = msg.header.stamp
+        img_msg.header.frame_id = msg.header.frame_id
+        self.viz_pub.publish(img_msg)
 
     def run(self):
         rate = rospy.Rate(0.1)
