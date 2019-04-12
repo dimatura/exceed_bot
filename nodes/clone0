@@ -13,6 +13,7 @@ import rospy
 import cv_bridge
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
+from geometry_msgs.msg import Twist
 
 import torch
 import torch.nn as nn
@@ -27,11 +28,13 @@ class Node(object):
         self.model_fname = rospy.get_param("~model_fname")
         self.img_ds_factor = rospy.get_param("~img_ds_factor")
         self.nbins = rospy.get_param("~nbins")
+        self.throttle = rospy.get_param("~throttle")
 
         self.model = None
 
         self.img_cb = rospy.Subscriber('/camera/color/image_raw', Image, self.img_cb)
         #self.bridge = cv_bridge.CvBridge()
+        self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=2)
 
     def init_model(self):
         if self.model is None:
@@ -49,6 +52,7 @@ class Node(object):
         return imgpp
 
     def img_cb(self, msg):
+        #tic = time.time()
         self.init_model()
         buf = np.frombuffer(msg.data, dtype=np.uint8)
         img = buf.reshape((msg.height, msg.width, 3))
@@ -64,11 +68,18 @@ class Node(object):
                 yhat = yhat.item()
 
         rospy.loginfo(yhat)
+        #toc = time.time()
+        #rospy.loginfo('elapsed: %f', (toc - tic)/1000.)
+        twist_msg = Twist()
+        twist_msg.linear.x = self.throttle
+        twist_msg.angular.z = yhat
+        self.cmd_pub.publish(twist_msg)
 
         #img_msg = self.bridge.cv2_to_imgmsg(img_np, encoding='bgr8')
         #img_msg.header.stamp = msg.header.stamp
         #img_msg.header.frame_id = msg.header.frame_id
         #self.img_pub.publish(img_msg)
+
 
     def run(self):
         rate = rospy.Rate(0.1)

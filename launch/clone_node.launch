@@ -9,10 +9,21 @@
     <!-- <rosparam file="$(find exceed_bot)/config/joy_gamesir2.yaml" command="load"/> -->
     <!-- <rosparam file="$(find exceed_bot)/config/joy_frsky.yaml" command="load"/> -->
 
+    <!--
     <node pkg="exceed_bot" type="clone0" name="clone_node" output="screen" required="true">
         <param name="model_fname" value="$(find exceed_bot)/models/clone2b.ts"/>
         <param name="img_ds_factor" value="4"/>
         <param name="nbins" value="16"/>
+        <param name="throttle" value="12"/>
     </node>
+    -->
+
+    <node pkg="exceed_bot" type="clone0" name="clone_node" output="screen" required="true">
+        <param name="model_fname" value="$(find exceed_bot)/models/clone1b.ts"/>
+        <param name="img_ds_factor" value="2"/>
+        <param name="nbins" value="16"/>
+        <param name="throttle" value="12"/>
+    </node>
+
 
 </launch>
