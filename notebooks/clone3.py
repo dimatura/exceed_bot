@@ -103,7 +103,10 @@ for _ in range(100):
             print('epoch: %d, itr: %d, loss: %f' % (epoch, itr, avg_loss))
             losses = []
         if itr % 800 == 0:
-            ebutils.validate(net, valid_loader, max_itr=200)
+            if nbins is None:
+                ebutils.validate_continuous(net, valid_loader, max_itr=200)
+            else:
+                ebutils.validate_discrete(net, valid_loader, max_itr=200)
             net = net.train()
         itr += 1
     ebutils.save_model(net, model_dir, name)
