@@ -39,8 +39,8 @@ import exceed_bot.train_utils as ebutils
 
 # %%
 nbins = 16
-img_ds_factor = 4
-name = 'wp1_d4'
+img_ds_factor = 2
+name = 'wp3_d2'
 model_dir = Path('/home/dmaturan/ws/exceed_bot/src/exceed_bot/models')
 dset_dir = Path('/home/dmaturan/data/exceed_bot')
 
@@ -90,12 +90,12 @@ net = net.train()
 net = net.cuda()
 
 # %%
-opt = optim.Adam(net.parameters(), lr=1e-4)
+opt = optim.Adam(net.parameters(), lr=1e-4, weight_decay=1e-6)
 itr = 0
 epoch = 0
 
 # %%
-for _ in range(100):
+for _ in range(800):
     for bx, by in train_loader:
         losses = []
         bx = bx.cuda()
@@ -125,7 +125,7 @@ for _ in range(100):
     epoch += 1
 
 # %%
-bi = 3
+bi = 2
 img = ebdata.unpreprocess(bx[bi])
 print(yhat[bi].argmax().item(), by[bi].item())
 img
