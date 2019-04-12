@@ -1,0 +1,18 @@
+<launch>
+    <param name="/exceed_bot/target_throttle" value="0.2"/>
+    <param name="/exceed_bot/publish_viz" value="true"/>
+    <param name="/exceed_bot/publish_cmd" value="true"/>
+    <param name="/exceed_bot/steer_scale" value="1.0"/>
+
+    <param name="/exceed_bot/pid_sample_time" value="0.01"/>
+    <param name="/exceed_bot/pid_kp" value="0.02"/>
+    <param name="/exceed_bot/pid_ki" value="0.02"/>
+    <param name="/exceed_bot/pid_kd" value="0.0"/>
+    <param name="/exceed_bot/motor_tps_max" value="12"/>
+
+    <node pkg="exceed_bot" type="pid_motor_control" name="pid_motor_control" output="screen" required="true"/>
+
+    <include file="$(find exceed_bot)/launch/wp1_d4.launch"/>
+
+    <include file="$(find exceed_bot)/launch/rs_aligned_depth.launch"/>
+</launch>

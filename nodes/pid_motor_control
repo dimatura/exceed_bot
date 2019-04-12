@@ -33,11 +33,6 @@ MOTOR_CENTER = 1450*4
 MOTOR_MIN = MOTOR_CENTER - 200*4
 MOTOR_MAX = MOTOR_CENTER + 180*4
 
-# TPS = ticks per s
-# we use this to scale joystick input for setpoint
-# no min - sadly the quadrature is not working, so we use as tachometer
-MOTOR_TPS_MAX = 12.
-
 # center between 1330-1500
 SERVO_CENTER = 1409
 # hard right 990-1113
@@ -52,10 +47,15 @@ class Node(object):
     def __init__(self):
         rospy.init_node('pid_motor_control_node')
 
-        PID_SAMPLE_TIME_S = rospy.get_param('~pid_sample_time')
-        PID_KP = rospy.get_param('~pid_kp')
-        PID_KI = rospy.get_param('~pid_ki')
-        PID_KD = rospy.get_param('~pid_kd')
+        PID_SAMPLE_TIME_S = rospy.get_param('/exceed_bot/pid_sample_time')
+        PID_KP = rospy.get_param('/exceed_bot/pid_kp')
+        PID_KI = rospy.get_param('/exceed_bot/pid_ki')
+        PID_KD = rospy.get_param('/exceed_bot/pid_kd')
+        # TPS = ticks per s
+        # we use this to scale joystick input for setpoint
+        # no min - sadly the quadrature is not working, so we use as tachometer
+        #MOTOR_TPS_MAX = 12.
+        self.MOTOR_TPS_MAX = rospy.get_param('/exceed_bot/motor_tps_max')
 
         self.ticks_per_s = 0.
         self.target_ticks_per_s = 0.
@@ -127,7 +127,7 @@ class Node(object):
 
         throttle_in = msg.linear.x
         # only using forward in this mode
-        throttle_in_ticks = np.clip(throttle_in * MOTOR_TPS_MAX, 0.0, MOTOR_TPS_MAX)
+        throttle_in_ticks = np.clip(throttle_in * self.MOTOR_TPS_MAX, 0.0, self.MOTOR_TPS_MAX)
         # throttle sets a setpoint, in ticks_per_s
         self.pid.setpoint = throttle_in_ticks
 
