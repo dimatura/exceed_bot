@@ -1,6 +1,7 @@
 import time
 import subprocess
 from spath import Path
+import hashlib
 
 import numpy as np
 

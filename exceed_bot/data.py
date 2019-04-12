@@ -1,5 +1,10 @@
 import subprocess
+import json
 from spath import Path
+from collections import OrderedDict
+from xml.etree import ElementTree
+import hashlib
+import funcy
 
 import numpy as np
 
@@ -13,6 +18,8 @@ import cv_bridge
 
 from PIL import Image
 import cv2
+
+import exceed_bot.train_utils as ebutils
 
 
 def preprocess(img):
@@ -62,13 +69,36 @@ def load_cached_clone_filelist(dset_dir):
         for fname in dset_dir.walkfiles('*.jpg'):
             yfname = Path(fname.stripext() + '.json')
             if yfname.exists():
-                if get_hash(fname) % 100 < 92:
+                if ebutils.get_hash(fname) % 100 < 92:
                     train_dset.append((fname, yfname))
                 else:
                     valid_dset.append((fname, yfname))
         split_fname.write_json({'train': train_dset, 'valid': valid_dset}, indent=2)
     return train_dset, valid_dset
 
+
+def load_cached_wp_filelist(dset_dir):
+    split_fname = Path(dset_dir)/('split_wp.json')
+
+    if split_fname.exists():
+        print('loaded from cache')
+        split = split_fname.read_json()
+        train_dset = split['train']
+        valid_dset = split['valid']
+    else:
+        print('loading from scratch')
+        train_dset = []
+        valid_dset = []
+
+        for fname in dset_dir.walkfiles('*.jpg'):
+            yfname = Path(fname.stripext() + '.xml')
+            if yfname.exists():
+                if ebutils.get_hash(fname) % 100 < 98:
+                    train_dset.append((fname, yfname))
+                else:
+                    valid_dset.append((fname, yfname))
+        split_fname.write_json({'train': train_dset, 'valid': valid_dset}, indent=2)
+    return train_dset, valid_dset
 
 
 class CloneDataset(object):
@@ -100,6 +130,68 @@ class CloneDataset(object):
         img = self.get_img(ix)
         img = preprocess(img)
         steer = np.float32(self.get_steer(ix))
+        if self.nbins is not None:
+            steer = discretize(steer, self.bins)
+        return (img, steer)
+
+
+class WpDataset(object):
+    def __init__(self, fnames, nbins, img_ds_factor):
+        self.nbins = nbins
+        self.img_ds_factor = img_ds_factor
+        all_fnames = fnames
+        self.fnames = []
+        for xfname, yfname in all_fnames:
+            steer = self.parse_xml(yfname)
+            if steer is None:
+                continue
+            self.fnames.append((xfname, yfname))
+
+        if self.nbins is not None:
+            self.bins = np.linspace(-1., 1., self.nbins+1)[1:]
+
+    def __len__(self):
+        return len(self.fnames)
+
+    def get_img(self, ix):
+        xfname, yfname = self.fnames[ix]
+        img = Image.open(xfname)
+        w, h = img.size
+        # resize to 320, 240 or 160, 120
+        img = img.resize((w//self.img_ds_factor, h//self.img_ds_factor))
+        return img
+
+    @funcy.memoize
+    def parse_xml(self, fname):
+        tree = ElementTree.parse(fname)
+        object_tree_list = tree.findall('object')
+
+        steer = None
+        for object_annotation in object_tree_list:
+            class_name = object_annotation.find('name').text
+            if class_name == 'waypointlo':
+                pt = object_annotation.find('point')
+                ptx = float(pt.find('x1').text)
+                pty = float(pt.find('y1').text)
+                steer = pty
+        return steer
+
+    def get_steer(self, ix):
+        xfname, yfname = self.fnames[ix]
+        #steer = Path(yfname).read_json()['steer']
+        steer = self.parse_xml(yfname)
+        return steer
+
+    def __getitem__(self, ix):
+        xfname, yfname = self.fnames[ix]
+        img = self.get_img(ix)
+        img = preprocess(img)
+        steer = np.float32(self.get_steer(ix))
+        steer /= float(self.img_ds_factor)
+        # norm to 01 CHW
+        steer /= float(img.shape[2])
+        # to -1,1
+        steer = np.float32((2.*steer - 1.))
         if self.nbins is not None:
             steer = discretize(steer, self.bins)
         return (img, steer)
