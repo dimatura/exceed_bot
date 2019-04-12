@@ -138,10 +138,11 @@ class CloneDataset(object):
 
 
 class WpDataset(object):
-    def __init__(self, fnames, nbins, img_ds_factor, augment=True):
+    def __init__(self, fnames, nbins, img_ds_factor, augment=True, flip=False):
         self.nbins = nbins
         self.img_ds_factor = img_ds_factor
         self.augment = augment
+        self.flip = flip
         all_fnames = fnames
         self.fnames = []
         for xfname, yfname in all_fnames:
@@ -155,8 +156,8 @@ class WpDataset(object):
 
         p = aug.Pipeline()
         #p.flip_left_right(0.5)
-        p.random_brightness(0.5, 0.6, 1.6)
-        p.random_erasing(0.1, 0.2)
+        p.random_brightness(0.5, 0.4, 1.8)
+        p.random_erasing(0.1, 0.28)
         #p.histogram_equalisation(0.9)
         p.random_color(0.5, 0.6, 1.6)
         p.random_contrast(0.5, 0.6, 1.6)
@@ -166,7 +167,7 @@ class WpDataset(object):
     def __len__(self):
         return len(self.fnames)
 
-    def get_img(self, ix):
+    def get_img(self, ix, do_flip=False):
         xfname, yfname = self.fnames[ix]
         img = Image.open(xfname)
         w, h = img.size
@@ -174,6 +175,8 @@ class WpDataset(object):
         img = img.resize((w//self.img_ds_factor, h//self.img_ds_factor))
         if self.augment:
             img = self.augtf(img)
+        if do_flip:
+            img = img[:, ::-1]
         return img
 
     @funcy.memoize
@@ -198,8 +201,12 @@ class WpDataset(object):
         return steer
 
     def __getitem__(self, ix):
+        if self.flip:
+            do_flip = np.random.random() < 0.5
+        else:
+            do_flip = False
         xfname, yfname = self.fnames[ix]
-        img = self.get_img(ix)
+        img = self.get_img(ix, do_flip=do_flip)
         img = preprocess(img)
         steer = np.float32(self.get_steer(ix))
         steer /= float(self.img_ds_factor)
@@ -209,4 +216,6 @@ class WpDataset(object):
         steer = np.float32((2.*steer - 1.))
         if self.nbins is not None:
             steer = discretize(steer, self.bins)
+        if do_flip:
+            steer = -steer
         return (img, steer)
