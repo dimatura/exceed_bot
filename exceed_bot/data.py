@@ -188,7 +188,7 @@ class WpDataset(object):
                 pt = object_annotation.find('point')
                 ptx = float(pt.find('x1').text)
                 pty = float(pt.find('y1').text)
-                steer = pty
+                steer = ptx
         return steer
 
     def get_steer(self, ix):
