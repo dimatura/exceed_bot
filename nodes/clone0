@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import time
+import sys
+import os
+
+import cv2
+import numpy as np
+import traitlets as tr
+
+import rospy
+
+import cv_bridge
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
+
+import torch
+import torch.nn as nn
+
+import exceed_bot.data as ebdata
+
+
+class Node(object):
+    def __init__(self):
+        rospy.init_node('clone0')
+
+        self.model_fname = rospy.get_param("~model_fname")
+        self.img_ds_factor = rospy.get_param("~img_ds_factor")
+        self.nbins = rospy.get_param("~nbins")
+
+        self.model = None
+
+        self.img_cb = rospy.Subscriber('/camera/color/image_raw', Image, self.img_cb)
+        #self.bridge = cv_bridge.CvBridge()
+
+    def init_model(self):
+        if self.model is None:
+            rospy.loginfo('loading model %s', self.model_fname)
+            self.model = torch.jit.load(self.model_fname)
+            self.model = self.model.eval()
+            self.model = self.model.cuda()
+
+    def massage_img(self, img):
+        h = img.shape[0]
+        w = img.shape[1]
+        img = cv2.resize(img, (w//self.img_ds_factor, h//self.img_ds_factor), None, 0, 0, cv2.INTER_NEAREST)
+        imgpp = ebdata.preprocess(img)
+        imgpp = imgpp[None, ...]
+        return imgpp
+
+    def img_cb(self, msg):
+        self.init_model()
+        buf = np.frombuffer(msg.data, dtype=np.uint8)
+        img = buf.reshape((msg.height, msg.width, 3))
+        # img = self.bridge.imgmsg_to_cv2(msg)
+        imgpp = self.massage_img(img)
+
+        with torch.no_grad():
+            imgt = torch.from_numpy(imgpp).cuda()
+            yhat = self.model(imgt)
+            if self.nbins > 0:
+                yhat = yhat.argmax().cpu().data.numpy()
+            else:
+                yhat = yhat.item()
+
+        rospy.loginfo(yhat)
+
+        #img_msg = self.bridge.cv2_to_imgmsg(img_np, encoding='bgr8')
+        #img_msg.header.stamp = msg.header.stamp
+        #img_msg.header.frame_id = msg.header.frame_id
+        #self.img_pub.publish(img_msg)
+
+    def run(self):
+        rate = rospy.Rate(0.1)
+        while not rospy.is_shutdown():
+            rospy.loginfo('hearbeat')
+            rate.sleep()
+
+
+if __name__ == '__main__':
+    node = Node()
+    node.run()

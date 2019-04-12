@@ -1,0 +1,18 @@
+<launch>
+    <node pkg="joy" type="joy_node" name="joy1" args="" required="true">
+        <param name="dev" value="/dev/input/js0"/>
+        <param name="deadzone" value="0.2"/>
+        <param name="autorepeat_rate" value="20"/>
+    </node>
+
+    <!-- <rosparam file="$(find exceed_bot)/config/joy_gamesir.yaml" command="load"/> -->
+    <!-- <rosparam file="$(find exceed_bot)/config/joy_gamesir2.yaml" command="load"/> -->
+    <!-- <rosparam file="$(find exceed_bot)/config/joy_frsky.yaml" command="load"/> -->
+
+    <node pkg="exceed_bot" type="clone0" name="clone_node" output="screen" required="true">
+        <param name="model_fname" value="$(find exceed_bot)/models/clone2b.ts"/>
+        <param name="img_ds_factor" value="4"/>
+        <param name="nbins" value="16"/>
+    </node>
+
+</launch>
