@@ -66,7 +66,7 @@ net = resnet18(pretrained=True)
 net.fc = nn.Linear(512, 1)
 
 # %%
-state_dict = ebutils.try_load_model(model_dir, 'clone2')
+state_dict = ebutils.try_load_model(model_dir, 'clone3')
 if state_dict is None:
     print('unable to load prior checkpt')
 else:
@@ -107,12 +107,13 @@ for _ in range(100):
             net = net.train()
         itr += 1
     ebutils.save_model(net, model_dir, name)
-    ebutils.export_torchscript(net, model_dir, name)
+    ebutils.export_torchscript(net, bx[0:1], model_dir, name)
     epoch += 1
 
 # %%
-img = ebdata.unpreprocess(bx[0])
-print(yhat[0].argmax().item(), by[0].item())
+bi = 0
+img = ebdata.unpreprocess(bx[bi])
+print(yhat[bi].item(), by[bi].item())
 img
 
 # %%
