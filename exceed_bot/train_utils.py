@@ -52,7 +52,7 @@ def get_hash(fname):
     return int(h.hexdigest(), 16)
 
 
-def validate(net, valid_loader, max_itr=200):
+def validate_discrete(net, valid_loader, max_itr=200):
     with torch.no_grad():
         net = net.eval()
         correct = 0
@@ -74,19 +74,41 @@ def validate(net, valid_loader, max_itr=200):
     net = net.train()
 
 
+def validate_continuous(net, valid_loader, max_itr=200):
+    with torch.no_grad():
+        net = net.eval()
+        mad = 0.
+        tic = time.time()
+        val_itr = 0
+        for bx, by in valid_loader:
+            bx = bx.cuda()
+            by = by.cuda()
+            yhat = net(bx)
+            l1 = np.abs(by.item() - yhat.item())
+            mad += l1
+            val_itr += 1
+            if val_itr == max_itr:
+                break
+        toc = time.time()
+        mad = mad/float(val_itr)
+        print('mad: %f' % mad)
+        print('avg time: %f' % ((toc - tic)/val_itr))
+    net = net.train()
+
+
 def partial_load(model, state_dict):
     """ allows state_dict that doesn't have all keys in model.
     """
     model_state = model.state_dict()
     for name, param in state_dict.iteritems():
         if name not in model_state:
-            print('Parameter %s not part of model, skipping', name)
+            print('Parameter %s not part of model, skipping' % name)
             continue
         if isinstance(param, torch.nn.Parameter):
             # backwards compatibility for serialized parameters
             param = param.data
         if param.size() != model_state[name].size():
-            print('wrong size for parameter %s, skipping', name)
+            print('wrong size for parameter %s, skipping' % name)
             continue
-        print('loading parameter %s', name)
+        print('loading parameter %s' % name)
         model_state[name].copy_(param)

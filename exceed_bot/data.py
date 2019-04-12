@@ -99,7 +99,7 @@ class CloneDataset(object):
         xfname, yfname = self.fnames[ix]
         img = self.get_img(ix)
         img = preprocess(img)
-        steer = self.get_steer(ix)
+        steer = np.float32(self.get_steer(ix))
         if self.nbins is not None:
             steer = discretize(steer, self.bins)
         return (img, steer)
