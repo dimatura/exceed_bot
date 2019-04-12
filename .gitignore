@@ -4,3 +4,6 @@
 .*.swp
 core
 training/.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints
+*.ipynb
+notebooks/clone1.pt.bk

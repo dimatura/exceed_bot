@@ -76,10 +76,10 @@ class CloneDataset(object):
         self.fnames = fnames
         #self.bins = np.linspace(-1., 1., 32+1)[1:]
         self.bins = np.linspace(-1., 1., nbins+1)[1:]
-
+        
     def __len__(self):
         return len(self.fnames)
-
+    
     def get_img(self, ix):
         xfname, yfname = self.fnames[ix]
         img = Image.open(xfname)
@@ -87,12 +87,12 @@ class CloneDataset(object):
         # resize to 320, 240
         img = img.resize((w//img_ds_factor, h//img_ds_factor))
         return img
-
+    
     def get_steer(self, ix):
         xfname, yfname = self.fnames[ix]
         steer = Path(yfname).read_json()['steer']
         return steer
-
+    
     def __getitem__(self, ix):
         xfname, yfname = self.fnames[ix]
         img = np.asarray(self.get_img(ix))
@@ -122,7 +122,7 @@ def validate(net):
         if val_itr == 100:
             break
     toc = time.time()
-    acc = float(correct)/val_itr
+    acc = float(correct)/val_itr 
     print('acc: %f' % acc)
     print('avg time: %f' % ((toc - tic)/val_itr))
     net = net.train()
