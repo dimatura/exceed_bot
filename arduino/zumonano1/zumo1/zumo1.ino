@@ -13,8 +13,8 @@
 
 #define SPEED_MEASURE_WINDOW_MS 40
 
-#define MAX_MOTOR 200
-#define MIN_MOTOR -100
+#define MAX_MOTOR 4000
+#define MIN_MOTOR -4000
 
 #define KP 0.05
 #define KD 0.0
