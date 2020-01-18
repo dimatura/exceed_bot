@@ -1,5 +1,6 @@
 import time
 import atexit
+import argparse
 
 import logging
 logging.basicConfig(format='%(asctime)s|%(name)s|%(levelname)s: %(message)s', level=logging.INFO)
@@ -27,38 +28,45 @@ def exit_handler():
     logging.info('closing port')
     ser.close()
 
-#ser = serial.Serial('/dev/ttyACM0', 9600)
-ser = serial.Serial('/dev/ttyACM0', 115200)
-#ser = serial.Serial('/dev/ttyUSB0', 115200)
-ser.reset_input_buffer()
-ser.reset_output_buffer()
-atexit.register(exit_handler)
-logging.info('open: %r' % ser.is_open)
-logging.info(ser.writable())
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('speedL', type=int)
+    parser.add_argument('speedR', type=int)
+    args = parser.parse_args()
 
-while True:
 
-    #msg0 = struct.pack('ff', 2., 0.0)
-    #msg1 = cobs.encode(msg0)
-    #msg2 = cobs.encode(msg1) + '\x00'
-    ##logging.info('writing')
-    ##logging.info(msg)
-    #wrote = ser.write(msg2)
-    ##logging.info('wrote %d bytes', wrote)
+    #ser = serial.Serial('/dev/ttyACM0', 9600)
+    ser = serial.Serial('/dev/ttyACM0', 115200)
+    #ser = serial.Serial('/dev/ttyUSB0', 115200)
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
+    atexit.register(exit_handler)
+    logging.info('open: %r' % ser.is_open)
+    logging.info(ser.writable())
 
-    msg0 = struct.pack('ff', 200.0, 200.0)
-    msg1 = cobs.encode(msg0) + b'\x00'
-    logging.info('writing')
-    #logging.info(msg)
-    wrote = ser.write(msg1)
-    logging.info('wrote %d bytes', wrote)
+    while True:
 
-    # get ack
-    #logging.info('reading')
-    recv = recv_msg2()
+        #msg0 = struct.pack('ff', 2., 0.0)
+        #msg1 = cobs.encode(msg0)
+        #msg2 = cobs.encode(msg1) + '\x00'
+        ##logging.info('writing')
+        ##logging.info(msg)
+        #wrote = ser.write(msg2)
+        ##logging.info('wrote %d bytes', wrote)
 
-    msg_parts = [ ('%s: %06.2f' % (fld, val)) for (fld, val) in zip(fields, recv)]
-    msg = ', '.join(msg_parts)
+        msg0 = struct.pack('ff', float(args.speedL), float(args.speedR))
+        msg1 = cobs.encode(msg0) + b'\x00'
+        logging.info('writing')
+        #logging.info(msg)
+        wrote = ser.write(msg1)
+        logging.info('wrote %d bytes', wrote)
 
-    logging.info(msg)
-    #time.sleep(1.)
+        # get ack
+        #logging.info('reading')
+        recv = recv_msg2()
+
+        msg_parts = [ ('%s: %06.2f' % (fld, val)) for (fld, val) in zip(fields, recv)]
+        msg = ', '.join(msg_parts)
+
+        logging.info(msg)
+        #time.sleep(1.)

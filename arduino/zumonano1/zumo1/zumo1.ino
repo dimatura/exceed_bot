@@ -16,7 +16,7 @@
 #define MAX_MOTOR 200
 #define MIN_MOTOR -100
 
-#define KP 0.01
+#define KP 0.05
 #define KD 0.0
 #define KI 0.001
 
