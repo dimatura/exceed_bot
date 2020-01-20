@@ -25,9 +25,11 @@ def recv_msg2(ser):
         return decoded1
 
 
-def exit_handler():
-    logging.info('closing port')
-    ser.close()
+def make_exit_handler(ser):
+    def exit_handler():
+        logging.info('closing port')
+        ser.close()
+    return exit_handler
 
 
 def main():
@@ -40,6 +42,7 @@ def main():
     #ser = serial.Serial('/dev/ttyUSB0', 115200)
     ser.reset_input_buffer()
     ser.reset_output_buffer()
+    exit_handler = make_exit_handler(ser)
     atexit.register(exit_handler)
     logging.info('open: %r' % ser.is_open)
     logging.info(ser.writable())
@@ -49,22 +52,25 @@ def main():
     while True:
 
         events = inputs.get_gamepad()
-        for event in events:
-            #print('type: {}, code: {}, state: {}'.format(event.ev_type, event.code, event.state))
-            if event.code == 'ABS_Y':
-                left = -float(event.state)/20.0
-                print('l: %f' % left)
-            elif event.code == 'ABS_RY':
-                right = -float(event.state)/20.0
-                print('r: %f' % right)
+        if False:
+            for event in events:
+                print('type: {}, code: {}, state: {}'.format(event.ev_type, event.code, event.state))
+                if event.code == 'ABS_Y':
+                    left = -float(event.state)/20.0
+                    print('l: %f' % left)
+                elif event.code == 'ABS_RY':
+                    right = -float(event.state)/20.0
+                    print('r: %f' % right)
+        else:
+             for event in events:
+                print('type: {}, code: {}, state: {}'.format(event.ev_type, event.code, event.state))
+                if event.code == 'ABS_Y':
+                    left = -(float(event.state) - 128)*12.0
+                    print('l: %f' % left)
+                elif event.code == 'ABS_RZ':
+                    right = -(float(event.state) - 128)*12.0
+                    print('r: %f' % right)
 
-        #msg0 = struct.pack('ff', 2., 0.0)
-        #msg1 = cobs.encode(msg0)
-        #msg2 = cobs.encode(msg1) + '\x00'
-        ##logging.info('writing')
-        ##logging.info(msg)
-        #wrote = ser.write(msg2)
-        ##logging.info('wrote %d bytes', wrote)
 
         msg0 = struct.pack('ff', float(left), float(right))
         msg1 = cobs.encode(msg0) + b'\x00'
