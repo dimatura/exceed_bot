@@ -34,9 +34,9 @@ def main():
     for device in inputs.devices.gamepads:
         print(device)
 
-
     #ser = serial.Serial('/dev/ttyACM0', 9600)
-    ser = serial.Serial('/dev/ttyACM0', 115200)
+    #ser = serial.Serial('/dev/ttyACM0', 115200)
+    ser = serial.Serial('/dev/zumo', 115200)
     #ser = serial.Serial('/dev/ttyUSB0', 115200)
     ser.reset_input_buffer()
     ser.reset_output_buffer()
