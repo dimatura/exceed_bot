@@ -156,17 +156,37 @@ struct CommsTask {
 struct EncoderTask {
   static constexpr int INPUT0_PIN = 0;
   static constexpr int INPUT1_PIN = 1;
-  static constexpr double SMOOTH_ALPHA = 0.8;
-  static constexpr int ENCODER_SAMPLING_PERIOD_MS = 40;
-  static constexpr int ENCODER_BUFFER_SIZE = 1;
+  static constexpr double SMOOTH_ALPHA = 0.5;
+
+  //static constexpr int ENCODER_SAMPLING_PERIOD_MS = 60;
+  //double ki = 240;
+  //double kp = 18;
+
+  static constexpr int ENCODER_SAMPLING_PERIOD_MS = 45;
+  double ki = 40;
+  double kp = 8;
+
+  //static constexpr int ENCODER_SAMPLING_PERIOD_MS = 80;
+  //double ki = 200;
+  //double kp = 12; //16;
+
+  //static constexpr int ENCODER_SAMPLING_PERIOD_MS = 160;
+  //double ki = 24.0;
+  //double kp = 6.0;
+
+  // 40, 8 works well with velocity_integrator
+
   // this tpe automagically increases
   elapsedMillis elapsed_ms;
+  long elapsed_ms_sum = 0;
   Encoder encoder;
 
   double ticks_per_s;
 
-  int32_t count0_sum_ = 0;
-  CircularBuffer<uint32_t, ENCODER_BUFFER_SIZE> counts_;
+  double last_position = 0.0;
+  double est_position = 0.0;
+  double est_velocity = 0.0;
+  double velocity_integrator = 0.0;
 
   EncoderTask() :
       encoder(INPUT0_PIN, INPUT1_PIN),
@@ -174,7 +194,7 @@ struct EncoderTask {
   { }
 
   void setup() {
-
+    elapsed_ms = 0;
   }
 
   void run() {
@@ -182,29 +202,30 @@ struct EncoderTask {
       return;
     }
 
-    int32_t ct0 = this->encoder.readAndReset();
-    count0_sum_ += ct0;
-    if (counts_.isFull()) {
-      // pop out last item, add it to moving sum
-      count0_sum_ -= counts_.pop();
-    }
-    // should always have at least one slot
-    counts_.push(ct0);
+    int32_t new_position = this->encoder.read();
+    est_position += ((est_velocity * static_cast<double>(elapsed_ms)) / 1000.0);
+    double position_error = (new_position - est_position);
 
-    //long new_position = this->encoder.read();
-    //double delta_ticks = new_position - old_position;
+    velocity_integrator += ((position_error * ki * static_cast<double>(elapsed_ms))/1000.0);
+    est_velocity = position_error * kp + velocity_integrator;
 
-    // forward is negative
-    this->ticks_per_s = -1000.0*(count0_sum_/static_cast<double>(ENCODER_SAMPLING_PERIOD_MS));
+    //this->ticks_per_s = -(count0_sum_*1000.0)/static_cast<double>(elapsed_ms_sum);
+    //this->ticks_per_s = SMOOTH_ALPHA*velocity_integrator + (1.0-SMOOTH_ALPHA)*this->ticks_per_s;
+    //this->ticks_per_s = velocity_integrator;
+    this->ticks_per_s = est_velocity;
 
     // update global ctx
-    ctx.ticks_per_s = this->ticks_per_s;
-
+    ctx.ticks_per_s = -this->ticks_per_s;
+    //Serial.println("vel_int:" + String(velocity_integrator) + ", err:" + String(position_error));
+    //Serial.println("est_pos:" + String(est_position) + ", pos:" + new_position);
+    //Serial.println(position_error);
     // reset
     elapsed_ms = 0;
   }
 
 } encoder_task;
+
+
 
 
 struct MotorControlTask {
@@ -252,7 +273,7 @@ struct MotorControlTask {
     double out = map(norm_out, -1.0, 1.0, SERVO_MIN, SERVO_MAX);
     //out = constrain(out, SERVO_MIN, SERVO_MAX);
     ctx.motor_input_deg = out;
-    //this->servo.write(static_cast<int>(out));
+    this->servo.write(static_cast<int>(out));
   }
 
 } motor_control_task;

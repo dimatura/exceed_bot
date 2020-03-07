@@ -1,4 +1,4 @@
-#include <Servo.h>
+
 #include <Encoder.h>
 
 
@@ -17,31 +17,22 @@ static constexpr int ENCA_PIN = 0;
 static constexpr int ENCB_PIN = 1;
 
 Encoder enc(ENCA_PIN, ENCB_PIN);
-Servo servo0, servo1, servo2;
 
-int servo_pos[3] = {SERVO_MIN, SERVO_MIN, SERVO_MIN};
-int servo_delta[3] = {4, 4, 4};
 long old_pos = -999;
+elapsedMillis elapsed_ms;
 
 void setup() {
   // initialize the digital pin as an output.
   pinMode(LED_PIN, OUTPUT);
-  pinMode(SERVO0_PIN, OUTPUT);
-  pinMode(SERVO1_PIN, OUTPUT);
-  //pinMode(SERVO2_PIN, OUTPUT);
-  pinMode(INPUT0_PIN, INPUT);
-  pinMode(INPUT1_PIN, INPUT);
-  //servo0.attach(SERVO0_PIN);
-  //servo1.attach(SERVO1_PIN);
-  //servo2.attach(SERVO2_PIN);
 }
 
 void loop() {
-  
+  /*
   int input0 = digitalRead(ENCA_PIN);
   int input1 = digitalRead(ENCB_PIN);
   Serial.println(String(input0) + String(input1));
   delay(20);
+  */
   /*
   int input0 = digitalRead(INPUT0_PIN);
   digitalWrite(LED_PIN, input0);
@@ -58,10 +49,13 @@ void loop() {
   servo1.write(servo_pos[1]);
   //servo2.write(servo_pos[2]);
   */
-  long new_pos = enc.read();
-  if (new_pos != old_pos) {
-    old_pos = new_pos;
-    Serial.println(new_pos);
+  if (elapsed_ms > 20) {
+    long new_pos = enc.read();
+    if (new_pos != old_pos) {
+      old_pos = new_pos;
+      Serial.println(new_pos);
+    }
+    elapsed_ms = 0;
   }
   //Serial.println(new_pos);
   //Serial.println("servo: " + String(servo_pos[0]));
