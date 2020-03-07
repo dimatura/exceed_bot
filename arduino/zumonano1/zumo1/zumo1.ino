@@ -116,12 +116,12 @@ struct ZumoPid {
   }
 
   void init() {
-//    left_pid.SetSampleTime(80);
-//    right_pid.SetSampleTime(80);
-//    left_pid.SetOutputLimits(MIN_MOTOR, MAX_MOTOR);
-//    right_pid.SetOutputLimits(MIN_MOTOR, MAX_MOTOR);
-//    left_pid.SetMode(AUTOMATIC);
-//    right_pid.SetMode(AUTOMATIC);
+    //left_pid.SetSampleTime(80);
+    //right_pid.SetSampleTime(80);
+    //left_pid.SetOutputLimits(MIN_MOTOR, MAX_MOTOR);
+    //right_pid.SetOutputLimits(MIN_MOTOR, MAX_MOTOR);
+    //left_pid.SetMode(AUTOMATIC);
+    //right_pid.SetMode(AUTOMATIC);
     //left_pid.setCmdRange(MIN_MOTOR, MAX_MOTOR);
     //right_pid.setCmdRange(MIN_MOTOR, MAX_MOTOR);
     // idk. this is for speed change, not actual motor speed
@@ -133,18 +133,17 @@ struct ZumoPid {
     if (current_ms < last_ms) {
       return;
     }
-//    uint32_t dt_ms = current_ms - last_ms;
-    
+    //uint32_t dt_ms = current_ms - last_ms;
     // should we use target or current to calculate?
     // just copy for pid sake. hehe, "pid sake"
     ticks_per_s[0] = zumo_speed.ticks_per_s[0];
     ticks_per_s[1] = zumo_speed.ticks_per_s[1];
     error[0] = target_ticks_per_s[0] - ticks_per_s[0];
     error[1] = target_ticks_per_s[1] - ticks_per_s[1];
-//    Serial.print(error[0]);
-//    Serial.print(",");
-//    Serial.print(error[1]);
-//    Serial.print("\n");
+    //Serial.print(error[0]);
+    //Serial.print(",");
+    //Serial.print(error[1]);
+    //Serial.print("\n");
 
     //left_pid.Compute();
     //right_pid.Compute();
@@ -157,8 +156,6 @@ struct ZumoPid {
     output[1] = constrain(output[1], MIN_MOTOR, MAX_MOTOR);
 
     motors->setSpeeds(output[0], output[1]);
-    
-    
   }
 };
 
