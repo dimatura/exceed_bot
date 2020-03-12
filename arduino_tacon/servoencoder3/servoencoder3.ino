@@ -18,10 +18,10 @@ static constexpr double DEFAULT_KP = 0.01;
 static constexpr double DEFAULT_KD = 0.00;
 static constexpr double DEFAULT_KI = 0.00;
 
-static constexpr long CMD_TIMEOUT_MS = 4000;
-static constexpr int ENCODER_SAMPLING_PERIOD_MS = 80;
-static constexpr int STEER_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS*2;
-static constexpr int MOTOR_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS*2;
+static constexpr long CMD_TIMEOUT_MS = 2000;
+static constexpr int ENCODER_SAMPLING_PERIOD_MS = 100*2;
+static constexpr int STEER_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
+static constexpr int MOTOR_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
 
 
 struct GlobalContext {
@@ -187,6 +187,7 @@ struct EncoderTask {
 
     // update global ctx
     ctx.ticks_per_s = (ticks_per_s + this->last_ticks_per_s)/2;
+    //ctx.ticks_per_s = ticks_per_s;
 
     this->last_ticks_per_s = ticks_per_s;
     elapsed_ms = 0;
@@ -196,8 +197,10 @@ struct EncoderTask {
 
 
 struct MotorControlTask {
-  static constexpr int SERVO_MIN = 90-40;
-  static constexpr int SERVO_MAX = 90+40;
+  //static constexpr int SERVO_MIN = 90-40;
+  //static constexpr int SERVO_MAX = 90+40;
+  static constexpr int SERVO_MIN = 90-30;
+  static constexpr int SERVO_MAX = 90+30;
 
   static constexpr int SERVO_MOTOR_PIN = 4;
 
@@ -258,6 +261,7 @@ struct SteerControlTask {
   static constexpr int SERVO_MAX = 90+28;
   static constexpr int SERVO_STEER_PIN = 3;
   PWMServo servo;
+  elapsedMillis elapsed_ms;
 
   void setup() {
     pinMode(SERVO_STEER_PIN, OUTPUT);
