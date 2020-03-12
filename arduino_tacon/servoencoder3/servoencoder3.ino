@@ -1,10 +1,12 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
-#include <PWMServo.h>
 #include <TimedPID.h>
 #include <ArduinoJson.h>
 #include <CircularBuffer.h>
 //#include <PacketSerial.h>
+#include <Servo.h>
+//#include <PWMServo.h>
+//#include "/home/dmaturan/apps/arduino-1.8.12/hardware/teensy/avr/libraries/Servo/Servo.h"
 
 
 static constexpr int LED_PIN = 13;
@@ -14,12 +16,12 @@ static constexpr int LED_PIN = 13;
 //static constexpr double DEFAULT_KD = 0.0;
 //static constexpr double DEFAULT_KI = 0.000001;
 
-static constexpr double DEFAULT_KP = 0.00;
+static constexpr double DEFAULT_KP = 6e-4;
 static constexpr double DEFAULT_KD = 0.00;
 static constexpr double DEFAULT_KI = 0.00;
 
 static constexpr long CMD_TIMEOUT_MS = 2000;
-static constexpr int ENCODER_SAMPLING_PERIOD_MS = 100;
+static constexpr int ENCODER_SAMPLING_PERIOD_MS = 60;
 static constexpr int STEER_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
 static constexpr int MOTOR_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
 
@@ -29,8 +31,8 @@ struct GlobalContext {
   double target_ticks_per_s = 0.0;
   double ticks_error = 0.0;
   int steer_input_deg = 90;
-  double norm_motor_input_deg = 0.0;
-  int motor_input_deg = 90;
+  double norm_motor_input = 0.0;
+  int motor_input_us = 90;
 
   double kp = DEFAULT_KP;
   double ki = DEFAULT_KI;
@@ -104,7 +106,7 @@ struct CommsTask {
           }
           JsonVariant kd = input_doc["kd"];
           if (!kd.isNull()) {
-            ctx.kd = ki.as<double>();
+            ctx.kd = kd.as<double>();
             ctx.pid_gains_reset = true;
           }
 
@@ -137,7 +139,7 @@ struct CommsTask {
     output_doc["target_ticks_per_s"] = ctx.target_ticks_per_s;
     output_doc["target_steer_deg"] = ctx.steer_input_deg;
     output_doc["ticks_per_s"] = ctx.ticks_per_s;
-    output_doc["motor_input_deg"] = ctx.motor_input_deg;
+    output_doc["motor_input_us"] = ctx.motor_input_us;
     output_doc["ms_since_last_input"] = static_cast<long>(ctx.ms_since_last_input);
     if (error) {
       output_doc["error"] = 1;
@@ -198,14 +200,17 @@ struct EncoderTask {
 
 
 struct MotorControlTask {
-  //static constexpr int SERVO_MIN = 90-40;
-  //static constexpr int SERVO_MAX = 90+40;
-  static constexpr int SERVO_MIN = 90-30;
-  static constexpr int SERVO_MAX = 90+30;
+  // note for esc we use microseconds, not degrees
+  //static constexpr int SERVO_MIN = 90-30;
+  //static constexpr int SERVO_MAX = 90+30;
+  static constexpr int SERVO_CENTER = 1500;
+  static constexpr int SERVO_MIN = SERVO_CENTER-200;
+  static constexpr int SERVO_MAX = SERVO_CENTER+200;
 
   static constexpr int SERVO_MOTOR_PIN = 4;
 
-  PWMServo servo;
+  //PWMServo servo;
+  Servo servo;
   TimedPID motor_pid;
   elapsedMillis elapsed_ms;
 
@@ -213,8 +218,10 @@ struct MotorControlTask {
 
   void setup() {
     pinMode(SERVO_MOTOR_PIN, OUTPUT);
-    this->servo.attach(SERVO_MOTOR_PIN, 1000, 2000);
-    this->servo.write(90);
+    // default min, max is 544, 2400
+    //this->servo.attach(SERVO_MOTOR_PIN, 1000, 2000);
+    this->servo.attach(SERVO_MOTOR_PIN);
+    this->servo.writeMicroseconds(SERVO_CENTER);
 
     // this actually defines servo range so it's weird. seems like esc is 1000-2000ms, 1500 middle.
     // but default of lib is different
@@ -242,7 +249,7 @@ struct MotorControlTask {
 
     if (ctx.ms_since_last_input > CMD_TIMEOUT_MS) {
       // stop
-      this->servo.write(90);
+      this->servo.writeMicroseconds(SERVO_CENTER);
       return;
     }
 
@@ -252,14 +259,13 @@ struct MotorControlTask {
 
     ctx.ticks_error = ctx.target_ticks_per_s - ctx.ticks_per_s;
 
-    double norm_out = motor_pid.getCmdAutoStep(ctx.target_ticks_per_s, ctx.ticks_per_s);
+    double norm_delta = motor_pid.getCmdAutoStep(ctx.target_ticks_per_s, ctx.ticks_per_s);
     // unorthodox but fuck it
-    ctx.norm_motor_input_deg += norm_out;
+    ctx.norm_motor_input = constrain(ctx.norm_motor_input + norm_delta, -1.0, 1.0);
 
-    double constrained = constrain(ctx.norm_motor_input_deg, -1.0, 1.0);
-    double out = map(constrained, -1.0, 1.0, static_cast<double>(SERVO_MIN), static_cast<double>(SERVO_MAX));
-    ctx.motor_input_deg = static_cast<int>(out);
-    this->servo.write(static_cast<int>(out));
+    double out = map(ctx.norm_motor_input, -1.0, 1.0, static_cast<double>(SERVO_MIN), static_cast<double>(SERVO_MAX));
+    ctx.motor_input_us = static_cast<int>(out);
+    this->servo.writeMicroseconds(static_cast<int>(out));
     this->elapsed_ms = 0;
   }
 
@@ -267,10 +273,11 @@ struct MotorControlTask {
 
 
 struct SteerControlTask {
-  static constexpr int SERVO_MIN = 90-28;
-  static constexpr int SERVO_MAX = 90+28;
+  static constexpr int SERVO_CENTER = 90;
+  static constexpr int SERVO_MIN = SERVO_CENTER-28;
+  static constexpr int SERVO_MAX = SERVO_CENTER+28;
   static constexpr int SERVO_STEER_PIN = 3;
-  PWMServo servo;
+  Servo servo;
   elapsedMillis elapsed_ms;
 
   void setup() {
@@ -282,7 +289,7 @@ struct SteerControlTask {
   void run() {
     if (ctx.ms_since_last_input > CMD_TIMEOUT_MS) {
       // stop
-      this->servo.write(90);
+      this->servo.write(SERVO_CENTER);
       return;
     }
 

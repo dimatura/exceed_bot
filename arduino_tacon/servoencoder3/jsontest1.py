@@ -43,13 +43,13 @@ def main():
     logging.info('open: %r' % ser.is_open)
     logging.info(ser.writable())
 
-    if True:
-        time.sleep(1.0)
-        cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 0.0003, "kd": 0.0, "ki": 0.0000}
-        msg = json.dumps(cmd) + '\n'
-        wrote = ser.write(msg.encode())
+    time.sleep(1.0)
+    cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 6e-4, "kd": 0, "ki": 0.0000}
+    msg = json.dumps(cmd) + '\n'
+    wrote = ser.write(msg.encode())
+    time.sleep(0.5)
 
-        time.sleep(0.5)
+    if False:
         while True:
             cmd = {"target_ticks_per_s": 140, "target_steer_deg": 90}
             msg = json.dumps(cmd) + '\n'
@@ -84,9 +84,9 @@ def main():
                     steer = (norm_steer*180 + 90)
                     print('steer: %f' % steer)
                 elif event.code == 'ABS_RZ':
-                    norm_throttle = -(float(event.state) - 128)/256.0
-                    throttle = norm_throttle * 40
-                    if abs(throttle) < 2:
+                    norm_throttle = -2.0*(float(event.state) - 128)/256.0
+                    throttle = 200*norm_throttle
+                    if abs(throttle) < 0.1:
                         throttle = 0
                     print('throttle: %f' % throttle)
 
