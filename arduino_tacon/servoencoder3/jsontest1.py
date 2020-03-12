@@ -45,7 +45,7 @@ def main():
 
     if True:
         time.sleep(1.0)
-        cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 0.008, "kd": 0.0, "ki": 0.001}
+        cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 0.000, "kd": 0.0, "ki": 0.0000}
         msg = json.dumps(cmd) + '\n'
         wrote = ser.write(msg.encode())
 

@@ -1,10 +1,11 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 #include <PWMServo.h>
-#include <TimedPID.h>
 #include <ArduinoJson.h>
 #include <CircularBuffer.h>
 //#include <PacketSerial.h>
+//#include <TimedPID.h>
+#include <PID_v1.h>
 
 
 static constexpr int LED_PIN = 13;
@@ -14,14 +15,14 @@ static constexpr int LED_PIN = 13;
 //static constexpr double DEFAULT_KD = 0.0;
 //static constexpr double DEFAULT_KI = 0.000001;
 
-static constexpr double DEFAULT_KP = 0.01;
+static constexpr double DEFAULT_KP = 0.00;
 static constexpr double DEFAULT_KD = 0.00;
 static constexpr double DEFAULT_KI = 0.00;
 
 static constexpr long CMD_TIMEOUT_MS = 2000;
-static constexpr int ENCODER_SAMPLING_PERIOD_MS = 100*2;
-static constexpr int STEER_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
-static constexpr int MOTOR_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS;
+static constexpr int ENCODER_SAMPLING_PERIOD_MS = 200;
+static constexpr int STEER_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS*2;
+static constexpr int MOTOR_PERIOD_MS = ENCODER_SAMPLING_PERIOD_MS*2;
 
 
 struct GlobalContext {
@@ -29,6 +30,7 @@ struct GlobalContext {
   double target_ticks_per_s = 0.0;
   double ticks_error = 0.0;
   int steer_input_deg = 90;
+  double norm_motor_input_deg = 0.0;
   int motor_input_deg = 90;
 
   double kp = DEFAULT_KP;
@@ -205,10 +207,13 @@ struct MotorControlTask {
   static constexpr int SERVO_MOTOR_PIN = 4;
 
   PWMServo servo;
-  TimedPID motor_pid;
+  PID *motor_pid;
   elapsedMillis elapsed_ms;
 
-  MotorControlTask() : motor_pid(DEFAULT_KP, DEFAULT_KI, DEFAULT_KD) { }
+  MotorControlTask() {
+    this->motor_pid = new PID(&ctx.ticks_per_s, &ctx.norm_motor_input_deg, &ctx.target_ticks_per_s, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD, P_ON_M, DIRECT);
+    //this->motor_pid = new PID(&ctx.ticks_per_s, &ctx.norm_motor_input_deg, &ctx.target_ticks_per_s, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD, DIRECT);
+  }
 
   void setup() {
     pinMode(SERVO_MOTOR_PIN, OUTPUT);
@@ -221,17 +226,28 @@ struct MotorControlTask {
     //this->motor_pid.setCmdRange(-10, 10);
     // fairly fast speed is 10-20 ticks each 40 ms
 
-    this->motor_pid.setCmdRange(-1.0, 1.0);
+    //this->motor_pid.setCmdRange(-1.0, 1.0);
+    this->motor_pid->SetMode(AUTOMATIC);
+    //this->motor_pid->SetOutputLimits(-1.0, 1.0);
+    this->motor_pid->SetOutputLimits(0.0, 1.0);
+    this->motor_pid->SetSampleTime(MOTOR_PERIOD_MS);
     this->elapsed_ms = 0;
   }
 
   void run() {
+    if (!this->motor_pid->Compute()) {
+      return;
+    }
+
     if (ctx.pid_gains_reset) {
-      this->motor_pid.setGains(ctx.kp, ctx.ki, ctx.kd);
-      this->motor_pid.reset();
+      //this->motor_pid.setGains(ctx.kp, ctx.ki, ctx.kd);
+      //this->motor_pid.reset();
+
+      this->motor_pid->SetTunings(ctx.kp, ctx.ki, ctx.kd);
       ctx.pid_gains_reset = false;
       return;
     }
+
 
     if (ctx.ms_since_last_input > CMD_TIMEOUT_MS) {
       // stop
@@ -239,14 +255,15 @@ struct MotorControlTask {
       return;
     }
 
-    if (this->elapsed_ms < MOTOR_PERIOD_MS) {
-        return;
-    }
+    //if (this->elapsed_ms < MOTOR_PERIOD_MS) {
+    //    return;
+    //}
 
     ctx.ticks_error = ctx.target_ticks_per_s - ctx.ticks_per_s;
 
-    double norm_out = motor_pid.getCmdAutoStep(ctx.target_ticks_per_s, ctx.ticks_per_s);
-    double out = map(norm_out, -1.0, 1.0, SERVO_MIN, SERVO_MAX);
+    //double norm_out = motor_pid.getCmdAutoStep(ctx.target_ticks_per_s, ctx.ticks_per_s);
+    //double out = map(ctx.norm_motor_input_deg, -1.0, 1.0, SERVO_MIN, SERVO_MAX);
+    double out = map(ctx.norm_motor_input_deg, 0.0, 1.0, SERVO_MIN, SERVO_MAX);
     //out = constrain(out, SERVO_MIN, SERVO_MAX);
     ctx.motor_input_deg = out;
     this->servo.write(static_cast<int>(out));
