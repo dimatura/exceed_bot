@@ -220,9 +220,14 @@ struct MotorControlTask {
     // but default of lib is different
     // note that this is delta speed, so accel
     //this->motor_pid.setCmdRange(-10, 10);
-    // fairly fast speed is 10-20 ticks each 40 ms
+    // fairly fast speed is 10-20 ticks each 40 ms -> 250-500 ticks/s
+    // 140 ticks/s is also a fairly slow but not too slow pace
 
-    double min_delta = 2.0/(SERVO_MAX - SERVO_MIN);
+    // here the idea is max change per computation is 1 servo degree, but this is rather slow?
+    // recall this is norm range, -1, 1
+    // for -+ 30 degrees (60 degree range), this is 0.03333
+    // double min_delta = 2.0/(SERVO_MAX - SERVO_MIN); 
+    double min_delta = 2.0;
     this->motor_pid.setCmdRange(-min_delta, min_delta);
     this->elapsed_ms = 0;
   }
