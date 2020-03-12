@@ -45,13 +45,13 @@ def main():
 
     if True:
         time.sleep(1.0)
-        cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 0.000, "kd": 0.0, "ki": 0.0000}
+        cmd = {"target_ticks_per_s": 0, "target_steer_deg": 90, "kp": 0.0001, "kd": 0.0, "ki": 0.0000}
         msg = json.dumps(cmd) + '\n'
         wrote = ser.write(msg.encode())
 
         time.sleep(0.5)
         while True:
-            cmd = {"target_ticks_per_s": 40, "target_steer_deg": 90}
+            cmd = {"target_ticks_per_s": 140, "target_steer_deg": 90}
             msg = json.dumps(cmd) + '\n'
             wrote = ser.write(msg.encode())
             time.sleep(0.1)
