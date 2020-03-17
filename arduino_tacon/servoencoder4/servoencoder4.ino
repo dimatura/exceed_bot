@@ -1,13 +1,48 @@
-#define ENCODER_OPTIMIZE_INTERRUPTS
-#include <Encoder.h>
+
+#define ON_TEENSY 0
+#define ON_M5 1
+
+
 #include <TimedPID.h>
 #include <ArduinoJson.h>
 #include <CircularBuffer.h>
-//#include <PacketSerial.h>
-#include <Servo.h>
-//#include <PWMServo.h>
-//#include "/home/dmaturan/apps/arduino-1.8.12/hardware/teensy/avr/libraries/Servo/Servo.h"
 
+//note: PWMServo is probably more performant but doesn't do microseconds
+
+#if ON_TEENSY
+#define ENCODER_OPTIMIZE_INTERRUPTS
+#include <Encoder.h>
+#include <Servo.h>
+#else
+#include <elapsedMillis.h>
+struct Servo {
+    void attach(int pin) {
+    }
+
+    void write(int degrees) {
+    }
+
+    void writeMicroseconds(int us) {
+    }
+};
+
+struct Encoder {
+    Encoder(int pina, int pinb) {
+    }
+
+    int32_t read() {
+      return 0;
+    }
+
+    int32_t readAndReset() {
+      return 0;
+    }
+};
+
+#endif
+
+//#include <PWMServo.h>
+//#include <PacketSerial.h>
 
 static constexpr int LED_PIN = 13;
 //static constexpr int SERVO2_PIN = 5;
