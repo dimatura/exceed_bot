@@ -14,7 +14,7 @@ struct EncoderTask {
   static constexpr float SMOOTH_ALPHA = 0.5;
   // TODO: make global and dynamic?
   static constexpr int ENCODER_SAMPLING_PERIOD_MS = 20;
-  static constexpr int ENCODER_BUFFER_BUCKETS = 16;
+  static constexpr int ENCODER_BUFFER_BUCKETS = 8;
 
   elapsedMillis elapsed_ms;
   Encoder encoder;
