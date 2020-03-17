@@ -43,7 +43,7 @@ struct CommsTask {
         if (err == DeserializationError::Ok) {
           JsonVariant tticks_var = input_doc["target_ticks_per_s"];
           if (!tticks_var.isNull()) {
-            ctx->target_ticks_per_s = tticks_var.as<double>();
+            ctx->target_ticks_per_s = tticks_var.as<float>();
           } else {
             this->error = true;
           }
@@ -58,17 +58,17 @@ struct CommsTask {
           // these are optional
           JsonVariant kp = input_doc["kp"];
           if (!kp.isNull()) {
-            ctx->kp = kp.as<double>();
+            ctx->kp = kp.as<float>();
             ctx->pid_gains_reset = true;
           }
           JsonVariant ki = input_doc["ki"];
           if (!ki.isNull()) {
-            ctx->ki = ki.as<double>();
+            ctx->ki = ki.as<float>();
             ctx->pid_gains_reset = true;
           }
           JsonVariant kd = input_doc["kd"];
           if (!kd.isNull()) {
-            ctx->kd = kd.as<double>();
+            ctx->kd = kd.as<float>();
             ctx->pid_gains_reset = true;
           }
 
