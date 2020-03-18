@@ -106,5 +106,8 @@ log2.plot(x='ms', y='diff0_s', style=['.-'])
 log2.plot(x='ms', y='diff5_s', style=['.-'])
 
 # %%
+# TODO: look at pd rolling
+# def mad(x): return np.fabs(x - x.mean()).mean()
+# s.rolling(window=60).apply(mad, raw=True).plot(style='k')
 
 # %%
