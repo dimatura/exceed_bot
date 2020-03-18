@@ -8,3 +8,4 @@ notebooks/.ipynb_checkpoints
 *.ipynb
 notebooks/clone1.pt.bk
 *.pt
+.ipynb_checkpoints/
