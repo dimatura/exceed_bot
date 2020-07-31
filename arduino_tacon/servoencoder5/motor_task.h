@@ -5,6 +5,10 @@
 #include "teensycompat.h"
 #include "context.h"
 
+// TODO: we should use feedforward term.
+// there's an arduino PID library that has it.
+// then that could help overcome the initial inertia when
+// starting, without relying on accurate encoder (which is currently bad at slow speeds).
 
 struct MotorControlTask {
   // note for esc we use microseconds, not degrees
@@ -38,7 +42,7 @@ struct MotorControlTask {
     // this actually defines servo range so it's weird. seems like esc is 1000-2000ms, 1500 middle.
     // but default of lib is different
     // note that this is delta speed, so accel
-    //this->motor_pid.setCmdRange(-10, 10);
+    // this->motor_pid.setCmdRange(-10, 10);
     // fairly fast speed is 10-20 ticks each 40 ms -> 250-500 ticks/s
     // 140 ticks/s is also a fairly slow but not too slow pace
 
