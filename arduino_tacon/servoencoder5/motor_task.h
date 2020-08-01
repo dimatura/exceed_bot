@@ -23,7 +23,8 @@ struct MotorControlTask {
 
   // note that each servo pulse is 20ms
   static constexpr long MOTOR_PERIOD_MS = 40;
-  // TODO: maybe only update when encoder updates
+  // TODO: maybe only update when encoder updates?
+  // note: current tracking pi encoder updates every 20ms
 
   //PWMServo servo;
   Servo servo;

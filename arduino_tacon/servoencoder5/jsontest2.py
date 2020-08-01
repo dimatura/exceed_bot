@@ -56,7 +56,7 @@ def main():
 
     while True:
         #cmd = {"target_ticks_per_s": 140, "target_steer_deg": 90}
-        cmd = ["motion", {"target_ticks_per_s": 0, "steer_input_deg": 90}]
+        cmd = ["motion", {"target_ticks_per_s": 40, "steer_input_deg": 90}]
         msg = json.dumps(cmd) + '\n'
         wrote = ser.write(msg.encode())
         # time.sleep(0.1)
@@ -64,7 +64,7 @@ def main():
         #logging.info(recv)
         formatted_msg = ', '.join(["{}:{:8.2f}".format(k, v) for (k, v) in recv.items()])
         logging.info(formatted_msg)
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":
