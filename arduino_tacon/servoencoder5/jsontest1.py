@@ -60,8 +60,8 @@ def main():
     cmd = ["ping", {}]
     pong = comms.send(cmd)
 
-    cmd = ["pid", {"kp": 0.0001, "kd": 0.0, "ki": 0.0006, "kf": 0.001}]
-    pid_reply = comms.send(cmd)
+    #cmd = ["pid", {"kp": 0.0001, "kd": 0.0, "ki": 0.0006, "kf": 0.001}]
+    #pid_reply = comms.send(cmd)
 
     time.sleep(0.5)
 
