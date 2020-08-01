@@ -1,0 +1,34 @@
+teleop:
+    move:
+        type: topic
+        message_type: "geometry_msgs/Twist"
+        topic_name: cmd_vel
+        axis_mappings:
+            -
+                axis: 2 # left thumb up-down
+                target: linear.x
+                scale: -1.0
+                offset: 0.0
+            -
+                axis: 3 # right thumb left-right
+                target: angular.z
+                scale: 1.0
+                offset: 0.0
+    left_switch:
+        type: topic
+        message_type: "std_msgs/Float64"
+        topic_name: left_switch
+        axis_mappings:
+            -
+                axis: 6 # left toggle
+                target: data
+                scale: -1.0
+    right_switch:
+        type: topic
+        message_type: "std_msgs/Float64"
+        topic_name: right_switch
+        axis_mappings:
+            -
+                axis: 7 # left toggle
+                target: data
+                scale: -1.0
