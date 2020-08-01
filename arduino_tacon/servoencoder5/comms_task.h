@@ -62,7 +62,7 @@ struct CommsTask {
     if (!steer_input_deg_var.isNull()) {
       ctx->steer_input_deg = steer_input_deg_var.as<int>();
     }
-
+    this->reply_motor_cmd(ctx);
     return true;
   }
 
