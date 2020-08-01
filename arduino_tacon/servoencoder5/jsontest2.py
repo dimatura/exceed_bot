@@ -54,9 +54,16 @@ def main():
     wrote = ser.write(msg.encode())
     recv = recv_msg(ser)
 
+    # 0.
+    cmd = ["pid", {"kp": 0.0, "kd": 0.0, "ki": 0.0001, "kf": 0.001}]
+    msg = json.dumps(cmd) + '\n'
+    wrote = ser.write(msg.encode())
+    recv = recv_msg(ser)
+    print(recv)
+
     while True:
         #cmd = {"target_ticks_per_s": 140, "target_steer_deg": 90}
-        cmd = ["motion", {"target_ticks_per_s": 40, "steer_input_deg": 90}]
+        cmd = ["motion", {"target_ticks_per_s": 180, "steer_input_deg": 90}]
         msg = json.dumps(cmd) + '\n'
         wrote = ser.write(msg.encode())
         # time.sleep(0.1)

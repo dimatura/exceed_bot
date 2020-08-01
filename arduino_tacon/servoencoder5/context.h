@@ -19,6 +19,7 @@ struct GlobalContext {
   float kp = DEFAULT_KP;
   float ki = DEFAULT_KI;
   float kd = DEFAULT_KD;
+  float kf = DEFAULT_KF;
   bool pid_gains_reset = false;
 
   elapsedMillis ms_since_last_input;

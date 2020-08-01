@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "teensycompat.h"
 #include "context.h"
+#include <MiniPID.h>
 
 // TODO: we should use feedforward term.
 // there's an arduino PID library that has it.
@@ -26,12 +27,16 @@ struct MotorControlTask {
   // TODO: maybe only update when encoder updates?
   // note: current tracking pi encoder updates every 20ms
 
+  static constexpr float TICKS_PER_S_DEADZONE = 1.0;
+
   //PWMServo servo;
   Servo servo;
-  TimedPID motor_pid;
+  //TimedPID motor_pid;
+  MiniPID motor_pid;
   elapsedMillis elapsed_ms;
 
-  MotorControlTask() : motor_pid(DEFAULT_KP, DEFAULT_KI, DEFAULT_KD) { }
+  //MotorControlTask() : motor_pid(DEFAULT_KP, DEFAULT_KI, DEFAULT_KD) { }
+  MotorControlTask() : motor_pid(DEFAULT_KP, DEFAULT_KI, DEFAULT_KD, DEFAULT_KF) { }
 
   void setup() {
     pinMode(SERVO_MOTOR_PIN, OUTPUT);
@@ -47,25 +52,24 @@ struct MotorControlTask {
     // fairly fast speed is 10-20 ticks each 40 ms -> 250-500 ticks/s
     // 140 ticks/s is also a fairly slow but not too slow pace
 
-    // here the idea is max change per computation is 1 servo degree, but this is rather slow?
     // recall this is norm range, -1, 1
-    // for -+ 30 degrees (60 degree range), this is 0.03333
-    // float min_delta = 2.0/(SERVO_MAX - SERVO_MIN);
-    float min_delta = 2.0;
-    this->motor_pid.setCmdRange(-min_delta, min_delta);
+    this->motor_pid.setOutputLimits(-1.0, 1.0);
+    // TODO: setMaxIOutput (clamps I term)
     this->elapsed_ms = 0;
   }
 
   void run(GlobalContext* ctx) {
     if (ctx->pid_gains_reset) {
-      this->motor_pid.setGains(ctx->kp, ctx->ki, ctx->kd);
       this->motor_pid.reset();
+      this->motor_pid.setPID(ctx->kp, ctx->ki, ctx->kd, ctx->kf);
       ctx->pid_gains_reset = false;
       return;
     }
 
     if (ctx->ms_since_last_input > CMD_TIMEOUT_MS) {
       // stop
+      ctx->norm_motor_input = 0.0;
+      ctx->motor_input_us = MOTOR_CENTER_US;
       this->servo.writeMicroseconds(MOTOR_CENTER_US);
       return;
     }
@@ -76,9 +80,19 @@ struct MotorControlTask {
 
     ctx->ticks_error = ctx->target_ticks_per_s - ctx->ticks_per_s;
 
-    float norm_delta = motor_pid.getCmdAutoStep(ctx->target_ticks_per_s, ctx->ticks_per_s);
+    if (fabs(ctx->target_ticks_per_s) < TICKS_PER_S_DEADZONE) {
+      // do nothing. avoid buildup when stationary
+      ctx->norm_motor_input = 0.0;
+      ctx->motor_input_us = MOTOR_CENTER_US;
+      this->servo.writeMicroseconds(MOTOR_CENTER_US);
+      this->elapsed_ms = 0;
+      return;
+    }
+
+    ctx->norm_motor_input = motor_pid.getOutput(ctx->ticks_per_s, ctx->target_ticks_per_s);
+
     // unorthodox but fuck it
-    ctx->norm_motor_input = constrain(ctx->norm_motor_input + norm_delta, -1.0, 1.0);
+    // ctx->norm_motor_input = constrain(ctx->norm_motor_input + norm_delta, -1.0, 1.0);
 
     float out = map(ctx->norm_motor_input, -1.0, 1.0, static_cast<float>(SERVO_MIN), static_cast<float>(SERVO_MAX));
     ctx->motor_input_us = static_cast<int>(out);

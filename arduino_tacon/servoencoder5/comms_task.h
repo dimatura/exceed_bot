@@ -70,11 +70,13 @@ struct CommsTask {
     JsonVariant kp = input_doc["kp"];
     JsonVariant ki = input_doc["ki"];
     JsonVariant kd = input_doc["kd"];
+    JsonVariant kf = input_doc["kf"];
     //TODO: check set at least one
 
     if (!kp.isNull()) { ctx->kp = kp.as<float>(); ctx->pid_gains_reset = true; }
     if (!ki.isNull()) { ctx->ki = ki.as<float>(); ctx->pid_gains_reset = true; }
     if (!kd.isNull()) { ctx->kd = kd.as<float>(); ctx->pid_gains_reset = true; }
+    if (!kf.isNull()) { ctx->kf = kf.as<float>(); ctx->pid_gains_reset = true; }
     this->reply_pid_cmd(ctx);
     return true;
   }
@@ -174,6 +176,7 @@ struct CommsTask {
     output_doc["kp"] = ctx->kp;
     output_doc["ki"] = ctx->ki;
     output_doc["kd"] = ctx->kd;
+    output_doc["kf"] = ctx->kf;
     output_doc[MS_SINCE_LAST_INPUT_KEY] = static_cast<long>(ctx->ms_since_last_input);
     if (!Serial.availableForWrite()) {
       return;
