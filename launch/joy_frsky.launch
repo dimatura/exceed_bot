@@ -1,0 +1,19 @@
+<launch>
+    <!-- <param name="/exceed_bot/motor_tps_max" value="12"/> -->
+    <!-- <rosparam file="$(find exceed_bot)/config/joy_frsky2.yaml" command="load"/>-->
+
+    <node pkg="joy" type="joy_node" name="joy1" args="" required="true">
+        <param name="dev" value="/dev/input/js0"/>
+        <!--<param name="deadzone" value="0.2"/>-->
+        <param name="deadzone" value="0.1"/>
+        <param name="autorepeat_rate" value="8"/>
+    </node>
+    <!-- <node pkg="joy_teleop" type="joy_teleop.py" name="joy_teleop"/> -->
+    <node pkg="teleop_twist_joy" type="teleop_node" name="joy_teleop">
+        <param name="axis_linear" value="2"/>
+        <param name="axis_angular" value="3"/>
+        <param name="scale_linear" value="-1.0"/>
+        <param name="scale_angular" value="1.0"/>
+        <param name="enable_button" value="6"/>
+    </node>
+</launch>
