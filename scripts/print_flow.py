@@ -1,0 +1,39 @@
+
+import time
+import atexit
+import struct
+from cobs import cobs
+
+import serial
+
+def close_serial():
+    ser.close()
+
+def read_msg():
+    buf = []
+    while True:
+        b = ser.read()
+        if b == '\0':
+            break
+        buf.append(b)
+    msg_data = cobs.decode(''.join(buf))
+    if len(msg_data) != 4:
+        print('bad length: %d' % len(msg_data))
+        return 0
+    msg = struct.unpack('<i', msg_data)
+    return msg
+
+
+#ser = serial.Serial('/dev/ttyACM0', 115200)
+#ser = serial.Serial('/dev/ttyACM1', 115200)
+#ser = serial.Serial('/dev/ttyACM2', 115200)
+ser = serial.Serial('/dev/teensy', 115200)
+atexit.register(close_serial)
+print(ser.is_open)
+
+accum = 0
+while True:
+    msg = read_msg()[0]
+    accum += msg
+    print(accum)
+

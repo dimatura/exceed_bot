@@ -3,6 +3,7 @@
 import time
 import sys
 import os
+from collections import OrderedDict
 
 import rospy
 
@@ -20,12 +21,14 @@ MIN_TICKS_PER_S = -200.0
 class Node:
     def __init__(self):
         rospy.init_node('motor_control_node')
+        # self.controller = MotorController('/dev/ttyACM0')
+        self.controller = MotorController('/dev/teensy')
+
         self.sub_vel = rospy.Subscriber('/cmd_vel', Twist, self.cmd_vel_cb)
         self.pub_steer_deg = rospy.Publisher('/steer_deg', Float64, queue_size=10)
         self.pub_target_ticks_per_s = rospy.Publisher('/target_ticks_per_s', Float64, queue_size=10)
         self.pub_ticks_per_s = rospy.Publisher('/ticks_per_s', Float64, queue_size=10)
         self.pub_motor_us = rospy.Publisher('/motor_us', Float64, queue_size=10)
-        self.controller = MotorController('/dev/ttyACM0')
         rospy.on_shutdown(self.shutdown)
 
     def cmd_vel_cb(self, msg):
@@ -38,14 +41,22 @@ class Node:
         self.pub_steer_deg.publish(Float64(float(steer_deg)))
         self.pub_target_ticks_per_s.publish(Float64(float(target_ticks_per_s)))
 
-        rospy.loginfo("steer deg: %f, target_ticks_per_s: %f" % (steer_deg, target_ticks_per_s))
+        info_msg_dict = OrderedDict()
+        info_msg_dict["steer deg"] = steer_deg
+        info_msg_dict["target_ticks_per_s"] = target_ticks_per_s
 
         reply = self.controller.motor_cmd(target_ticks_per_s, steer_deg)
         if reply is None:
-            rospy.logerr("Error contacting motor controller")
+            rospy.loginfo(", ".join(["%s: %r" % (k, v) for (k, v) in info_msg_dict.items()]))
+            rospy.logerr("motor_control: Error contacting motor controller (no reply)")
             return
         ticks_per_s = reply['ticks_per_s']
         motor_us = reply['motor_input_us']
+
+        info_msg_dict["ticks_per_s"] = ticks_per_s
+        info_msg_dict["motor_input_us"] = motor_us
+        rospy.loginfo(", ".join(["%s: %r" % (k, v) for (k, v) in info_msg_dict.items()]))
+
         self.pub_ticks_per_s.publish(Float64(float(ticks_per_s)))
         self.pub_motor_us.publish(Float64(float(motor_us)))
 

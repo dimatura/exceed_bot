@@ -1,6 +1,7 @@
 import time
 import atexit
 import argparse
+import json
 
 import serial
 import rospy
@@ -35,11 +36,13 @@ class MotorController:
 
     def _send(self, msg, get_reply=True):
         if self.ser is None:
+            rospy.logwarn("self.ser is None")
             return
         msg = json.dumps(msg) + '\n'
         wrote = self.ser.write(msg.encode())
         if get_reply:
             reply = self._receive()
+            return reply
         else:
             return wrote
 
@@ -48,10 +51,12 @@ class MotorController:
             return
         s = self.ser.read_until(b'\n')
         n = len(s)
+        # print('received %d' %  n)
         if n > 0:
             try:
                 decoded = json.loads(s[:(n-1)])
             except json.decoder.JSONDecodeError:
+                rospy.logerr("Error decoding JSON reply from motor controller")
                 decoded = None
             return decoded
         else:
