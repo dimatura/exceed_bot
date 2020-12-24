@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="exceed_bot" type="encoder_pub" name="encoder_pub" output="screen" required="true">
-    </node>
-</launch>

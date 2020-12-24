@@ -1,1 +1,1 @@
-rosbag record /camera/aligned_depth_to_color/camera_info /camera/aligned_depth_to_color/image_raw /camera/color/image_raw /camera/color/camera_info /tf /tf_static
+rosbag record -b 512 -o /home/dmaturan/bag_data /camera/aligned_depth_to_color/camera_info /camera/aligned_depth_to_color/image_raw /camera/color/image_raw /camera/color/camera_info /tf /tf_static /joy /cmd_vel /steer_deg /target_ticks_per_s /ticks_per_s /motor_us

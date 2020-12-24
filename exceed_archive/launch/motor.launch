@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="exceed_bot" type="motor_control" name="motor_control" output="screen" required="true">
-    </node>
-</launch>

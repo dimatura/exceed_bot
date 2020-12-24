@@ -14,8 +14,36 @@ from std_msgs.msg import Float64
 from exceed_bot.motor_controller import MotorController
 
 
-MAX_TICKS_PER_S = 200.0
-MIN_TICKS_PER_S = -200.0
+# MAX_TICKS_PER_S = 200.0
+# MIN_TICKS_PER_S = -200.0
+
+MAX_TICKS_PER_S = 400.0
+MIN_TICKS_PER_S = -400.0
+
+# defaults
+# thought it was good but now overshoots when going faster?
+# KP = 0.0001
+# KI = 0.0006
+# KD = 0.0
+# KF = 0.0012
+
+# better a bit sluggish
+# KP = 0.0000
+# KI = 0.0001
+# KD = 0.0
+# KF = 0.0012
+
+# still sluggish but better
+# KP = 0.0001
+# KI = 0.0001
+# KD = 0.0
+# KF = 0.0012
+
+# still sluggish but better
+KP = 0.00016
+KI = 0.0001
+KD = 0.0
+KF = 0.0018
 
 
 class Node:
@@ -30,6 +58,9 @@ class Node:
         self.pub_ticks_per_s = rospy.Publisher('/ticks_per_s', Float64, queue_size=10)
         self.pub_motor_us = rospy.Publisher('/motor_us', Float64, queue_size=10)
         rospy.on_shutdown(self.shutdown)
+
+        reply = self.controller.set_pid(KP, KI, KD, KF)
+        rospy.loginfo("pid reply: %r" % reply)
 
     def cmd_vel_cb(self, msg):
         throttle = msg.linear.x
