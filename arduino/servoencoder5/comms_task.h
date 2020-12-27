@@ -9,6 +9,7 @@
 #define STEER_INPUT_DEG_KEY "steer_input_deg"
 #define MOTOR_INPUT_US_KEY "motor_input_us"
 #define TICKS_PER_S_KEY "ticks_per_s"
+#define RAW_TICKS_KEY "raw_ticks"
 #define TARGET_TICKS_PER_S_KEY "target_ticks_per_s"
 #define MS_SINCE_LAST_INPUT_KEY "ms_since_last_input"
 #define ERROR_KEY "error"
@@ -154,10 +155,11 @@ struct CommsTask {
 
   // note: Serial.write: if there is space in buffer, returns immediately
   // else, will block until buffer has free space
-  // TODO: check for availableForWrite?
+  // so we check availableForWrite first
   void reply_motor_cmd(GlobalContext* ctx) {
     StaticJsonDocument<output_msg_capacity> output_doc;
     output_doc[TARGET_TICKS_PER_S_KEY] = ctx->target_ticks_per_s;
+    output_doc[RAW_TICKS_KEY] = ctx->raw_ticks;
     output_doc[STEER_INPUT_DEG_KEY] = ctx->steer_input_deg;
     output_doc[TICKS_PER_S_KEY] = ctx->ticks_per_s;
     output_doc[MOTOR_INPUT_US_KEY] = ctx->motor_input_us;

@@ -8,6 +8,7 @@
 #include "teensycompat.h"
 #include "context.h"
 
+
 struct EncoderTask {
   static constexpr int INPUT0_PIN = 0;
   static constexpr int INPUT1_PIN = 1;
@@ -78,6 +79,9 @@ struct EncoderTask {
     this->vel_int += (ticks_err * TRACK_KI * dt_s); // wind up the I-term
     this->vel_est = ticks_err * TRACK_KP + this->vel_int; // new vel_est: P-term plus I-term
     ctx->ticks_per_s = -this->vel_est;
+
+    // raw ticks for post-hoc analysis
+    ctx->raw_ticks = ticks;
 
     elapsed_ms = 0;
   }

@@ -10,6 +10,7 @@
 
 struct GlobalContext {
   float ticks_per_s = 0.0;
+  int raw_ticks = 0;
   float target_ticks_per_s = 0.0;
   float ticks_error = 0.0;
   int steer_input_deg = 90;

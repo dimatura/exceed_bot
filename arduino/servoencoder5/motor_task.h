@@ -6,10 +6,9 @@
 #include "context.h"
 #include <MiniPID.h>
 
-// TODO: we should use feedforward term.
-// there's an arduino PID library that has it.
-// then that could help overcome the initial inertia when
-// starting, without relying on accurate encoder (which is currently bad at slow speeds).
+// we use MiniPID that has feed-forward term. Helps overcome the initial inertia when
+// starting, without relying on accurate encoder (which is currently bad at slow speeds),
+// and without relying only on error term buildup.
 
 struct MotorControlTask {
   // note for esc we use microseconds, not degrees
