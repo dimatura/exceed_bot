@@ -1,6 +1,0 @@
-<launch>
-    <include file="$(find exceed_bot)/launch/joy_frsky.launch"/>
-    <include file="$(find exceed_bot)/launch/motor_control.launch"/>
-    <include file="$(find exceed_bot)/launch/rs2_lowres.launch"/>
-    <include file="$(find exceed_bot)/launch/rs2_rosbag_rec.launch"/>
-</launch>

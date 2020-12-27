@@ -1,0 +1,9 @@
+<launch>
+    <arg name="rs2" default="0"/>
+    <arg name="rec" default="0"/>
+
+    <include file="$(find exceed_bot)/launch/joy_frsky.launch"/>
+    <include file="$(find exceed_bot)/launch/motor_control.launch"/>
+    <include file="$(find exceed_bot)/launch/rs2_lowres.launch" if="$(arg rs2)"/>
+    <include file="$(find exceed_bot)/launch/rs2_rosbag_rec.launch" if="$(arg rec)"/>
+</launch>

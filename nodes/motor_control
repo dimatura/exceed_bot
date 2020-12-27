@@ -10,15 +10,16 @@ import rospy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 from std_msgs.msg import Float64
+from std_msgs.msg import Int32
 
 from exceed_bot.motor_controller import MotorController
 
 
-# MAX_TICKS_PER_S = 200.0
-# MIN_TICKS_PER_S = -200.0
+MAX_TICKS_PER_S = 300.0
+MIN_TICKS_PER_S = -300.0
 
-MAX_TICKS_PER_S = 400.0
-MIN_TICKS_PER_S = -400.0
+# MAX_TICKS_PER_S = 400.0
+# MIN_TICKS_PER_S = -400.0
 
 # defaults
 # thought it was good but now overshoots when going faster?
@@ -40,10 +41,17 @@ MIN_TICKS_PER_S = -400.0
 # KF = 0.0012
 
 # still sluggish but better
-KP = 0.00016
-KI = 0.0001
+# KP = 0.00016
+# KI = 0.0001
+# KD = 0.0
+# KF = 0.0018
+
+# try more feedforward
+KP = 0.0000
+KI = 0.0000
 KD = 0.0
-KF = 0.0018
+KF = 0.004
+
 
 
 class Node:
@@ -56,6 +64,7 @@ class Node:
         self.pub_steer_deg = rospy.Publisher('/steer_deg', Float64, queue_size=10)
         self.pub_target_ticks_per_s = rospy.Publisher('/target_ticks_per_s', Float64, queue_size=10)
         self.pub_ticks_per_s = rospy.Publisher('/ticks_per_s', Float64, queue_size=10)
+        self.pub_raw_ticks = rospy.Publisher('/raw_ticks', Int32, queue_size=10)
         self.pub_motor_us = rospy.Publisher('/motor_us', Float64, queue_size=10)
         rospy.on_shutdown(self.shutdown)
 
@@ -83,13 +92,16 @@ class Node:
             return
         ticks_per_s = reply['ticks_per_s']
         motor_us = reply['motor_input_us']
+        raw_ticks = reply["raw_ticks"]
 
         info_msg_dict["ticks_per_s"] = ticks_per_s
         info_msg_dict["motor_input_us"] = motor_us
+        info_msg_dict["raw_ticks"] = raw_ticks
         rospy.loginfo(", ".join(["%s: %r" % (k, v) for (k, v) in info_msg_dict.items()]))
 
         self.pub_ticks_per_s.publish(Float64(float(ticks_per_s)))
         self.pub_motor_us.publish(Float64(float(motor_us)))
+        self.pub_raw_ticks.publish(Int32(int(raw_ticks)))
 
     def servo_map(self, val):
         # -1, 1 to 0, 180

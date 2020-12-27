@@ -38,6 +38,9 @@ class MotorController:
         if self.ser is None:
             rospy.logwarn("self.ser is None")
             return
+        if not self.ser.is_open:
+            rospy.logwarn("self.ser is not open")
+            return
         msg = json.dumps(msg) + '\n'
         wrote = self.ser.write(msg.encode())
         if get_reply:
